@@ -4,5 +4,8 @@ export const ErrorMessage = {
    USERNAME_ALREADY_CREATED: `Username is occupied by another user`,
    EMAIL_ALREADY_CREATED: `Email is occupied by another user`,
    USER_NOT_FOUND: `No user found with this email`,
-   PASSWORD_DOES_NOT_MATCH: `Password does not match`,
+   INCORRECT_PASSWORD: `Incorrect Password`,
+   TOKEN_EXPIRED: `Token Expired`,
+   USER_NOT_EXIST: `User no longer exist`,
+   SAME_PASSWORD: `Passwords should not be the same`,
 };

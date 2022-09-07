@@ -6,7 +6,7 @@ interface ErrorArgs {
    message: string;
 }
 
-export class ErrorHandler {
+class ErrorHandler {
    throwBaseError(): never {
       throw new Error(ErrorMessage.DEFAULT_ERROR);
    }
@@ -19,6 +19,10 @@ export class ErrorHandler {
 
    throwDbError({ message }: ErrorArgs): never {
       throw new ApolloError(`DB_ERROR: ${message}`);
+   }
+
+   throwError({ message }: ErrorArgs): never {
+      throw new Error(message);
    }
 }
 

@@ -1,6 +1,7 @@
+import { string } from "zod";
 import { builder } from "../../builder";
 
-builder.prismaObject("User", {
+export const User = builder.prismaObject("User", {
    fields: t => ({
       id: t.exposeInt("id"),
       username: t.exposeString("username"),
@@ -29,4 +30,39 @@ export const SignInUserInput = builder.inputType("SignInUserInput", {
    }),
 });
 
-// export const SignInResponse = builder.asdfasdf;
+export const ChangePasswordInput = builder.inputType("ChangePasswordInput", {
+   fields: t => ({
+      token: t.string({ required: true }),
+      newPassword: t.string({ required: true }),
+   }),
+});
+
+export const ErrorResponse = builder.simpleObject("ErrorResponse", {
+   fields: t => ({
+      field: t.string(),
+      message: t.string(),
+   }),
+});
+
+export const AuthenticationResponse = builder.simpleObject("AuthenticationResponse", {
+   fields: t => ({
+      user: t.field({
+         type: User,
+         nullable: true,
+      }),
+      error: t.field({
+         type: ErrorResponse,
+         nullable: true,
+      }),
+   }),
+});
+
+export const ChangePasswordResponse = builder.simpleObject("ChangePasswordResponse", {
+   fields: t => ({
+      success: t.boolean(),
+      error: t.field({
+         type: ErrorResponse,
+         nullable: true,
+      }),
+   }),
+});

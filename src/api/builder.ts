@@ -1,9 +1,10 @@
 import SchemaBuilder from "@pothos/core";
 import PrismaPlugin from "@pothos/plugin-prisma";
+import SimpleObjectsPlugin from "@pothos/plugin-simple-objects";
 import { DateTimeResolver } from "graphql-scalars";
 
 import type PrismaTypes from "../../prisma/pothos-types";
-import { Context } from "../utils/context.types";
+import { Context } from "../utils/types";
 import { db } from "../utils/db";
 
 export const builder = new SchemaBuilder<{
@@ -16,7 +17,7 @@ export const builder = new SchemaBuilder<{
       };
    };
 }>({
-   plugins: [PrismaPlugin],
+   plugins: [PrismaPlugin, SimpleObjectsPlugin],
    prisma: {
       client: db,
    },

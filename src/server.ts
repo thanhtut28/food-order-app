@@ -1,17 +1,34 @@
 import { ApolloServer } from "apollo-server-express";
 
 import express from "express";
-import { PORT } from "./constants/config";
+import { COOKIE_NAME, PORT, __prod__ } from "./constants/config";
 import { schema } from "./api/schema";
 import cors from "cors";
+import session from "express-session";
+import connectRedis from "connect-redis";
+import Redis from "ioredis";
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 
 (async () => {
-   const apolloServer = new ApolloServer({
-      schema,
-      context: ({ req, res }) => ({ req, res }),
-   });
-
    const app = express();
+   const RedisStore = connectRedis(session);
+   const redisClient = new Redis();
+
+   app.use(
+      session({
+         name: COOKIE_NAME,
+         store: new RedisStore({ client: redisClient, disableTouch: false }),
+         cookie: {
+            maxAge: 1000 * 60 * 60 * 24 * 31,
+            httpOnly: true,
+            sameSite: "lax",
+            secure: __prod__,
+         },
+         saveUninitialized: false,
+         secret: "keyboard cat",
+         resave: false,
+      })
+   );
 
    app.use(
       cors({
@@ -20,8 +37,10 @@ import cors from "cors";
       })
    );
 
-   app.get("/hello", (req, res, next) => {
-      throw new Error("hello");
+   const apolloServer = new ApolloServer({
+      schema,
+      context: ({ req, res }) => ({ req, res, redis: redisClient }),
+      plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
    });
 
    await apolloServer.start();
