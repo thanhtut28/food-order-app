@@ -20,7 +20,7 @@ export const db = new PrismaClient({
          level: "warn",
       },
    ],
-   errorFormat: "pretty",
+   // errorFormat: "pretty",
 });
 
 db.$on("query", e => {

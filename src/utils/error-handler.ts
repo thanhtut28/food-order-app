@@ -1,4 +1,4 @@
-import { ApolloError, UserInputError } from "apollo-server-express";
+import { ApolloError, AuthenticationError, UserInputError } from "apollo-server-express";
 import { ErrorMessage } from "../constants/message";
 
 interface ErrorArgs {
@@ -7,6 +7,10 @@ interface ErrorArgs {
 }
 
 class ErrorHandler {
+   throwAuthError(): never {
+      throw new AuthenticationError(ErrorMessage.NOT_AUTHENTICATED);
+   }
+
    throwBaseError(): never {
       throw new Error(ErrorMessage.DEFAULT_ERROR);
    }

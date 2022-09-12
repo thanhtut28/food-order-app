@@ -18,10 +18,12 @@ import { v4 } from "uuid";
 import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../../../constants/config";
 import { sendEmail } from "../../../utils/sendEmail";
 import changePasswordValidator from "../../../validator/change-password";
+import updateUsernameValidator from "../../../validator/update-username";
 
 builder.mutationFields(t => ({
    signUp: t.field({
       type: AuthenticationResponse,
+      skipTypeScopes: true,
       args: {
          input: t.arg({
             type: SignUpUserInput,
@@ -60,6 +62,7 @@ builder.mutationFields(t => ({
 
    signIn: t.field({
       type: AuthenticationResponse,
+      skipTypeScopes: true,
       nullable: true,
       args: {
          input: t.arg({
@@ -195,6 +198,49 @@ builder.mutationFields(t => ({
 
          return {
             success: true,
+            error: null,
+         };
+      },
+   }),
+
+   updateUsername: t.field({
+      type: AuthenticationResponse,
+      args: {
+         username: t.arg({
+            type: "String",
+            required: true,
+         }),
+      },
+      resolve: async (_root, { username }, { req }) => {
+         const schemaData = updateUsernameValidator(username);
+
+         const error = validateSchema(schemaData);
+
+         if (error) {
+            return {
+               user: null,
+               error,
+            };
+         }
+
+         const user = await db.user.findUnique({ where: { id: req.session.userId } });
+
+         if (!user) {
+            errorHandler.throwDbError({ message: ErrorMessage.USER_NOT_EXIST });
+         }
+
+         let newUser: User | undefined;
+         try {
+            newUser = await db.user.update({
+               where: { id: req.session.userId },
+               data: { username },
+            });
+         } catch (_e) {
+            errorHandler.throwDbError({ message: ErrorMessage.CANNOT_UPDATE_USERNAME });
+         }
+
+         return {
+            user: newUser,
             error: null,
          };
       },

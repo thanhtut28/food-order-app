@@ -192,6 +192,11 @@
   dependencies:
     "@prisma/generator-helper" "^4.3.1"
 
+"@pothos/plugin-scope-auth@^3.13.0":
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/@pothos/plugin-scope-auth/-/plugin-scope-auth-3.13.0.tgz#f9dd6959c19901b597fc89ffe7d817b2968c21ce"
+  integrity sha512-+8mBfOCzC8BPTKpD2rkgiMhDyHXCWvp6TY0orca0Ea+OpyQyTDAR9LStmuS2xnF7jmhtV0LSwmwHBlRMHCnoXA==
+
 "@pothos/plugin-simple-objects@^3.5.0":
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/@pothos/plugin-simple-objects/-/plugin-simple-objects-3.5.0.tgz#89fdaac0d8d1a1d9eaec07751bc991e097738658"

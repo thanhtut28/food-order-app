@@ -1,4 +1,5 @@
 import SchemaBuilder from "@pothos/core";
+import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
 import PrismaPlugin from "@pothos/plugin-prisma";
 import SimpleObjectsPlugin from "@pothos/plugin-simple-objects";
 import { DateTimeResolver } from "graphql-scalars";
@@ -6,8 +7,13 @@ import { DateTimeResolver } from "graphql-scalars";
 import type PrismaTypes from "../../prisma/pothos-types";
 import { Context } from "../utils/types";
 import { db } from "../utils/db";
+import { AuthenticationError } from "apollo-server-core";
+import { ErrorMessage } from "../constants/message";
 
 export const builder = new SchemaBuilder<{
+   AuthScopes: {
+      isLoggedIn: boolean;
+   };
    Context: Context;
    PrismaTypes: PrismaTypes;
    Scalars: {
@@ -17,10 +23,16 @@ export const builder = new SchemaBuilder<{
       };
    };
 }>({
-   plugins: [PrismaPlugin, SimpleObjectsPlugin],
+   scopeAuthOptions: {
+      unauthorizedError: () => new AuthenticationError(ErrorMessage.NOT_AUTHENTICATED),
+   },
+   plugins: [ScopeAuthPlugin, PrismaPlugin, SimpleObjectsPlugin],
    prisma: {
       client: db,
    },
+   authScopes: ({ req }) => ({
+      isLoggedIn: !!req.session.userId,
+   }),
 });
 
 builder.addScalarType("DateTime", DateTimeResolver, {});

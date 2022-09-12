@@ -5,9 +5,7 @@ interface SignInInput {
    password: string;
 }
 
-export type SignInSchemaData = SafeParseReturnType<SignInInput, SignInInput>;
-
-export default function changePasswordValidator(password: string): SignInSchemaData {
+export default function changePasswordValidator(password: string) {
    const changePasswordInput = z.object({
       password: passwordSchema,
    });

@@ -4,7 +4,7 @@ import { builder } from "../../builder";
 builder.queryFields(t => ({
    users: t.prismaField({
       type: ["User"],
-      resolve: async (query, _root, ctx) => {
+      resolve: async (query, _root, _args) => {
          return db.user
             .findMany({ ...query })
             .then(users => {
@@ -16,6 +16,18 @@ builder.queryFields(t => ({
             .catch(err => {
                throw new Error(err);
             });
+      },
+   }),
+
+   me: t.prismaField({
+      type: "User",
+      nullable: true,
+      resolve: async (query, _root, _args, { req }) => {
+         const userId = req.session.userId;
+         if (!userId) {
+            return null;
+         }
+         return db.user.findUnique({ ...query, where: { id: userId } });
       },
    }),
 }));

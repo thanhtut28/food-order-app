@@ -8,4 +8,6 @@ export const ErrorMessage = {
    TOKEN_EXPIRED: `Token Expired`,
    USER_NOT_EXIST: `User no longer exist`,
    SAME_PASSWORD: `Passwords should not be the same`,
+   CANNOT_UPDATE_USERNAME: `Failed to update username`,
+   NOT_AUTHENTICATED: "Not Authenticated",
 };
