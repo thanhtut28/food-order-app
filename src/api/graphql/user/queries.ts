@@ -13,8 +13,9 @@ builder.queryFields(t => ({
                }
                return users;
             })
-            .catch(err => {
-               throw new Error(err);
+            .catch((err: unknown) => {
+               console.log(err);
+               throw err;
             });
       },
    }),

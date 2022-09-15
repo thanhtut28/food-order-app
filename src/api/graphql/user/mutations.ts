@@ -234,7 +234,7 @@ builder.mutationFields(t => ({
                where: { id: req.session.userId },
                data: { username },
             })
-            .catch(e => {
+            .catch((e: unknown) => {
                const err = handleSignUpError(e);
                if (err) {
                   errorHandler.throwInputError({ message: err.message });
@@ -276,7 +276,7 @@ builder.mutationFields(t => ({
                where: { id: req.session.userId },
                data: { email },
             })
-            .catch(e => {
+            .catch((e: unknown) => {
                const err = handleSignUpError(e);
                if (err) {
                   errorHandler.throwInputError({ message: err.message });

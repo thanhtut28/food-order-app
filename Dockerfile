@@ -13,6 +13,7 @@ RUN yarn
 
 COPY . .
 
+RUN npx prisma generate
 RUN yarn build
 
 ENV NODE_ENV production
