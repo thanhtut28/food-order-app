@@ -25,14 +25,14 @@ import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-co
             secure: __prod__,
          },
          saveUninitialized: false,
-         secret: "keyboard cat",
+         secret: process.env.SESSION_SECRET!,
          resave: false,
       })
    );
 
    app.use(
       cors({
-         origin: ["https://studio.apollographql.com"],
+         origin: ["https://studio.apollographql.com", "http://localhost:3000"],
          credentials: true,
       })
    );
@@ -40,7 +40,7 @@ import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-co
    const apolloServer = new ApolloServer({
       schema,
       context: ({ req, res }) => ({ req, res, redis: redisClient }),
-      // plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
+      plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
    });
 
    await apolloServer.start();

@@ -22,8 +22,10 @@ builder.queryFields(t => ({
    me: t.prismaField({
       type: "User",
       nullable: true,
+      skipTypeScopes: true,
       resolve: async (query, _root, _args, { req }) => {
          const userId = req.session.userId;
+
          if (!userId) {
             return null;
          }

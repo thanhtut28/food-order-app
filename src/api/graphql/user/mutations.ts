@@ -19,6 +19,7 @@ import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../../../constants/config";
 import { sendEmail } from "../../../utils/sendEmail";
 import changePasswordValidator from "../../../validator/change-password";
 import updateUsernameValidator from "../../../validator/update-username";
+import updateEmailValidator from "../../../validator/update-email";
 
 builder.mutationFields(t => ({
    signUp: t.field({
@@ -204,7 +205,7 @@ builder.mutationFields(t => ({
    }),
 
    updateUsername: t.field({
-      type: AuthenticationResponse,
+      type: "Boolean",
       args: {
          username: t.arg({
             type: "String",
@@ -217,32 +218,73 @@ builder.mutationFields(t => ({
          const error = validateSchema(schemaData);
 
          if (error) {
-            return {
-               user: null,
-               error,
-            };
+            errorHandler.throwInputError({ message: error.message });
+            return false;
          }
 
          const user = await db.user.findUnique({ where: { id: req.session.userId } });
 
          if (!user) {
             errorHandler.throwDbError({ message: ErrorMessage.USER_NOT_EXIST });
+            return false;
          }
 
-         let newUser: User | undefined;
-         try {
-            newUser = await db.user.update({
+         await db.user
+            .update({
                where: { id: req.session.userId },
                data: { username },
+            })
+            .catch(e => {
+               const err = handleSignUpError(e);
+               if (err) {
+                  errorHandler.throwInputError({ message: err.message });
+               }
+               errorHandler.throwDbError({ message: ErrorMessage.CANNOT_UPDATE_USERNAME });
             });
-         } catch (_e) {
-            errorHandler.throwDbError({ message: ErrorMessage.CANNOT_UPDATE_USERNAME });
+
+         return true;
+      },
+   }),
+
+   updateEmail: t.field({
+      type: "Boolean",
+      args: {
+         email: t.arg({
+            type: "String",
+            required: true,
+         }),
+      },
+      resolve: async (_root, { email }, { req }) => {
+         const schemaData = updateEmailValidator(email);
+
+         const error = validateSchema(schemaData);
+
+         if (error) {
+            errorHandler.throwInputError({ message: error.message });
+            return false;
          }
 
-         return {
-            user: newUser,
-            error: null,
-         };
+         const user = await db.user.findUnique({ where: { id: req.session.userId } });
+
+         if (!user) {
+            errorHandler.throwDbError({ message: ErrorMessage.USER_NOT_EXIST });
+            return false;
+         }
+
+         await db.user
+            .update({
+               where: { id: req.session.userId },
+               data: { email },
+            })
+            .catch(e => {
+               const err = handleSignUpError(e);
+               if (err) {
+                  errorHandler.throwInputError({ message: err.message });
+               }
+               errorHandler.throwDbError({ message: ErrorMessage.CANNOT_UPDATE_USERNAME });
+            });
+
+         return true;
       },
    }),
 
