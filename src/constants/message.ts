@@ -7,7 +7,7 @@ export const ErrorMessage = {
    INCORRECT_PASSWORD: `Incorrect Password`,
    TOKEN_EXPIRED: `Token Expired`,
    USER_NOT_EXIST: `User no longer exist`,
-   SAME_PASSWORD: `Passwords should not be the same`,
+   SAME_PASSWORD: `Should set a new password`,
    CANNOT_UPDATE_USERNAME: `Failed to update username`,
    NOT_AUTHENTICATED: "Not Authenticated",
 };

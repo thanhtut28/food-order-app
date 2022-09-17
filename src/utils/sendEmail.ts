@@ -8,7 +8,7 @@ export async function sendEmail(to: string, html: string) {
    // create reusable transporter object using the default SMTP transport
    const transporter = nodemailer.createTransport(
       sendgridTranport({
-         apiKey: "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",
+         apiKey: process.env.SEND_GRID_API_KEY as string,
       })
    );
 
@@ -16,8 +16,8 @@ export async function sendEmail(to: string, html: string) {
    const info = await transporter.sendMail({
       from: "rday61062@gmail.com", // sender address
       to, // list of receivers
-      subject: "Hello ✔", // Subject line
-      text: "Hello world?", // plain text body
+      subject: "Change Password", // Subject line
+      text: "Change Password", // plain text body
       html, // html body
    });
 

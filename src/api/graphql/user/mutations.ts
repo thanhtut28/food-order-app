@@ -108,14 +108,21 @@ builder.mutationFields(t => ({
    }),
 
    forgotPassword: t.field({
-      type: "Boolean",
+      type: ChangePasswordResponse,
+      skipTypeScopes: true,
       args: {
          email: t.arg({ type: "String", required: true }),
       },
       resolve: async (_root, { email }, { redis }) => {
          const user = await db.user.findUnique({ where: { email } });
          if (!user) {
-            return false;
+            return {
+               success: false,
+               error: {
+                  field: Field.EMAIL,
+                  message: ErrorMessage.USER_NOT_FOUND,
+               },
+            };
          }
 
          const token = v4();
@@ -124,17 +131,21 @@ builder.mutationFields(t => ({
 
          await sendEmail(
             email,
-            `<a href="http://localhost:3000/change-password/${token}">change-password</a>`
+            `<a href="http://localhost:3000/account/change-password/${token}">Click here to change your password.</a>`
          ).catch(() => {
             errorHandler.throwError({ message: `Fail to send email. Try again later` });
          });
 
-         return true;
+         return {
+            success: true,
+            error: null,
+         };
       },
    }),
 
    changePassword: t.field({
       type: ChangePasswordResponse,
+      skipTypeScopes: true,
       args: {
          input: t.arg({
             type: ChangePasswordInput,
