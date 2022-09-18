@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { Field } from "../../../constants/enum";
 import { ErrorMessage } from "../../../constants/message";
 import { PRISMA_STATUS_CODES } from "../../../constants/status-code";
+import errorHandler from "../../../utils/error-handler";
 
 export function handleSignUpError(e: any) {
    if (e instanceof Prisma.PrismaClientKnownRequestError) {
@@ -19,6 +20,9 @@ export function handleSignUpError(e: any) {
             };
          }
       }
+   }
+   if (e instanceof Prisma.PrismaClientInitializationError) {
+      errorHandler.throwBaseError();
    }
 
    return null;
