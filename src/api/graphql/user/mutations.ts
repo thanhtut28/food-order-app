@@ -73,37 +73,42 @@ builder.mutationFields(t => ({
       },
 
       resolve: async (_root, { input: { email, password } }, { req }) => {
-         const user = await db.user.findUnique({
-            where: {
-               email,
-            },
-         });
-
-         if (!user) {
-            return {
-               user: null,
-               error: {
-                  field: Field.EMAIL,
-                  message: ErrorMessage.USER_NOT_FOUND,
+         try {
+            const user = await db.user.findUnique({
+               where: {
+                  email,
                },
-            };
+            });
+
+            if (!user) {
+               return {
+                  user: null,
+                  error: {
+                     field: Field.EMAIL,
+                     message: ErrorMessage.USER_NOT_FOUND,
+                  },
+               };
+            }
+
+            const validatePassword = await compare(password, user.password);
+
+            if (!validatePassword) {
+               return {
+                  user: null,
+                  error: {
+                     field: Field.PASSWORD,
+                     message: ErrorMessage.INCORRECT_PASSWORD,
+                  },
+               };
+            }
+
+            req.session.userId = user.id;
+
+            return { user, error: null };
+         } catch (e) {
+            // DB connection error
+            errorHandler.throwBaseError();
          }
-
-         const validatePassword = await compare(password, user.password);
-
-         if (!validatePassword) {
-            return {
-               user: null,
-               error: {
-                  field: Field.PASSWORD,
-                  message: ErrorMessage.INCORRECT_PASSWORD,
-               },
-            };
-         }
-
-         req.session.userId = user.id;
-
-         return { user, error: null };
       },
    }),
 
@@ -233,12 +238,19 @@ builder.mutationFields(t => ({
             return false;
          }
 
-         const user = await db.user.findUnique({ where: { id: req.session.userId } });
+         // try {
+         //    const user = await db.user.findUnique({ where: { id: req.session.userId } });
 
-         if (!user) {
-            errorHandler.throwDbError({ message: ErrorMessage.USER_NOT_EXIST });
-            return false;
-         }
+         //    if (!user) {
+         //       errorHandler.throwDbError({ message: ErrorMessage.USER_NOT_EXIST });
+         //       return false;
+         //    }
+         // } catch (e) {
+         //    if (e instanceof Prisma.PrismaClientInitializationError) {
+         //       errorHandler.throwBaseError();
+         //    }
+         //    throw e;
+         // }
 
          await db.user
             .update({
@@ -252,7 +264,6 @@ builder.mutationFields(t => ({
                }
                errorHandler.throwDbError({ message: ErrorMessage.CANNOT_UPDATE_USERNAME });
             });
-
          return true;
       },
    }),
@@ -275,12 +286,18 @@ builder.mutationFields(t => ({
             return false;
          }
 
-         const user = await db.user.findUnique({ where: { id: req.session.userId } });
-
-         if (!user) {
-            errorHandler.throwDbError({ message: ErrorMessage.USER_NOT_EXIST });
-            return false;
-         }
+         // try {
+         //    const user = await db.user.findUnique({ where: { id: req.session.userId } });
+         //    if (!user) {
+         //       errorHandler.throwDbError({ message: ErrorMessage.USER_NOT_EXIST });
+         //       return false;
+         //    }
+         // } catch (e) {
+         //    if (e instanceof Prisma.PrismaClientInitializationError) {
+         //       errorHandler.throwBaseError();
+         //    }
+         //    throw e;
+         // }
 
          await db.user
             .update({
@@ -288,6 +305,7 @@ builder.mutationFields(t => ({
                data: { email },
             })
             .catch((e: unknown) => {
+               console.log(e);
                const err = handleSignUpError(e);
                if (err) {
                   errorHandler.throwInputError({ message: err.message });
