@@ -1,19 +1,4 @@
-import { string } from "zod";
 import { builder } from "../../builder";
-
-export const User = builder.prismaObject("User", {
-   fields: t => ({
-      id: t.exposeInt("id"),
-      username: t.exposeString("username"),
-      email: t.exposeString("email"),
-      createdAt: t.expose("createdAt", {
-         type: "DateTime",
-      }),
-      updatedAt: t.expose("updatedAt", {
-         type: "DateTime",
-      }),
-   }),
-});
 
 export const SignUpUserInput = builder.inputType("SignUpUserInput", {
    fields: t => ({
@@ -63,6 +48,20 @@ export const ChangePasswordResponse = builder.simpleObject("ChangePasswordRespon
       error: t.field({
          type: ErrorResponse,
          nullable: true,
+      }),
+   }),
+});
+
+export const User = builder.prismaObject("User", {
+   fields: t => ({
+      id: t.exposeInt("id"),
+      username: t.exposeString("username"),
+      email: t.exposeString("email"),
+      createdAt: t.expose("createdAt", {
+         type: "DateTime",
+      }),
+      updatedAt: t.expose("updatedAt", {
+         type: "DateTime",
       }),
    }),
 });

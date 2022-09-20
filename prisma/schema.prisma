@@ -23,27 +23,31 @@ model User {
   email     String   @unique
   username  String   @unique
   password  String
-  order     Order[]
+  orders    Order[]
   cart      Cart?
 }
 
 model MenuItem {
-  id        Int       @id @default(autoincrement())
-  updatedAt DateTime  @updatedAt
-  createdAt DateTime  @default(now())
-  name      String    @unique
-  category  Category?
-  order     Order[]
-  cart      Cart[]
+  id          Int          @id @default(autoincrement())
+  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime     @default(now())
+  name        String       @unique
+  photo       String
+  price       Float
+  categoryId  Int?
+  category    Category?    @relation(fields: [categoryId], references: [id])
+  orders      Order[]
+  carts       Cart[]
+  ingredients Ingredient[]
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
-  name      String   @unique
-  productId Int      @unique
-  product   MenuItem @relation(fields: [productId], references: [id])
+  id          Int          @id @default(autoincrement())
+  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime     @default(now())
+  name        String       @unique
+  menuItems   MenuItem[]
+  ingredients Ingredient[]
 }
 
 model Cart {
@@ -52,16 +56,25 @@ model Cart {
   createdAt DateTime   @default(now())
   userId    Int        @unique
   user      User       @relation(fields: [userId], references: [id])
-  menuItem  MenuItem[]
+  menuItems MenuItem[]
 }
 
 model Order {
-  id        Int        @id @default(autoincrement())
-  updatedAt DateTime   @updatedAt
-  createdAt DateTime   @default(now())
-  userId    Int
-  user      User       @relation(fields: [userId], references: [id])
-  menuItem  MenuItem[]
-  quantity  Int
-  active    Boolean
+  id         Int        @id @default(autoincrement())
+  updatedAt  DateTime   @updatedAt
+  createdAt  DateTime   @default(now())
+  userId     Int
+  totalPrice Float
+  active     Boolean
+  user       User       @relation(fields: [userId], references: [id])
+  menuItems  MenuItem[]
+}
+
+model Ingredient {
+  id         Int        @id @default(autoincrement())
+  updatedAt  DateTime   @updatedAt
+  createdAt  DateTime   @default(now())
+  name       String     @unique
+  menuItems  MenuItem[]
+  categories Category[]
 }

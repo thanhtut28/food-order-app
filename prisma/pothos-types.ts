@@ -1,4 +1,4 @@
-import type { Prisma, User, MenuItem, Category, Cart, Order } from "@prisma/client";
+import type { Prisma, User, MenuItem, Category, Cart, Order, Ingredient } from "@prisma/client";
 export default interface PrismaTypes {
     User: {
         Name: "User";
@@ -8,10 +8,10 @@ export default interface PrismaTypes {
         OrderBy: Prisma.UserOrderByWithRelationInput;
         WhereUnique: Prisma.UserWhereUniqueInput;
         Where: Prisma.UserWhereInput;
-        RelationName: "order" | "cart";
-        ListRelations: "order";
+        RelationName: "orders" | "cart";
+        ListRelations: "orders";
         Relations: {
-            order: {
+            orders: {
                 Shape: Order[];
                 Types: PrismaTypes["Order"];
             };
@@ -29,20 +29,24 @@ export default interface PrismaTypes {
         OrderBy: Prisma.MenuItemOrderByWithRelationInput;
         WhereUnique: Prisma.MenuItemWhereUniqueInput;
         Where: Prisma.MenuItemWhereInput;
-        RelationName: "category" | "order" | "cart";
-        ListRelations: "order" | "cart";
+        RelationName: "category" | "orders" | "carts" | "ingredients";
+        ListRelations: "orders" | "carts" | "ingredients";
         Relations: {
             category: {
                 Shape: Category | null;
                 Types: PrismaTypes["Category"];
             };
-            order: {
+            orders: {
                 Shape: Order[];
                 Types: PrismaTypes["Order"];
             };
-            cart: {
+            carts: {
                 Shape: Cart[];
                 Types: PrismaTypes["Cart"];
+            };
+            ingredients: {
+                Shape: Ingredient[];
+                Types: PrismaTypes["Ingredient"];
             };
         };
     };
@@ -54,12 +58,16 @@ export default interface PrismaTypes {
         OrderBy: Prisma.CategoryOrderByWithRelationInput;
         WhereUnique: Prisma.CategoryWhereUniqueInput;
         Where: Prisma.CategoryWhereInput;
-        RelationName: "product";
-        ListRelations: never;
+        RelationName: "menuItems" | "ingredients";
+        ListRelations: "menuItems" | "ingredients";
         Relations: {
-            product: {
-                Shape: MenuItem;
+            menuItems: {
+                Shape: MenuItem[];
                 Types: PrismaTypes["MenuItem"];
+            };
+            ingredients: {
+                Shape: Ingredient[];
+                Types: PrismaTypes["Ingredient"];
             };
         };
     };
@@ -71,14 +79,14 @@ export default interface PrismaTypes {
         OrderBy: Prisma.CartOrderByWithRelationInput;
         WhereUnique: Prisma.CartWhereUniqueInput;
         Where: Prisma.CartWhereInput;
-        RelationName: "user" | "menuItem";
-        ListRelations: "menuItem";
+        RelationName: "user" | "menuItems";
+        ListRelations: "menuItems";
         Relations: {
             user: {
                 Shape: User;
                 Types: PrismaTypes["User"];
             };
-            menuItem: {
+            menuItems: {
                 Shape: MenuItem[];
                 Types: PrismaTypes["MenuItem"];
             };
@@ -92,16 +100,37 @@ export default interface PrismaTypes {
         OrderBy: Prisma.OrderOrderByWithRelationInput;
         WhereUnique: Prisma.OrderWhereUniqueInput;
         Where: Prisma.OrderWhereInput;
-        RelationName: "user" | "menuItem";
-        ListRelations: "menuItem";
+        RelationName: "user" | "menuItems";
+        ListRelations: "menuItems";
         Relations: {
             user: {
                 Shape: User;
                 Types: PrismaTypes["User"];
             };
-            menuItem: {
+            menuItems: {
                 Shape: MenuItem[];
                 Types: PrismaTypes["MenuItem"];
+            };
+        };
+    };
+    Ingredient: {
+        Name: "Ingredient";
+        Shape: Ingredient;
+        Include: Prisma.IngredientInclude;
+        Select: Prisma.IngredientSelect;
+        OrderBy: Prisma.IngredientOrderByWithRelationInput;
+        WhereUnique: Prisma.IngredientWhereUniqueInput;
+        Where: Prisma.IngredientWhereInput;
+        RelationName: "menuItems" | "categories";
+        ListRelations: "menuItems" | "categories";
+        Relations: {
+            menuItems: {
+                Shape: MenuItem[];
+                Types: PrismaTypes["MenuItem"];
+            };
+            categories: {
+                Shape: Category[];
+                Types: PrismaTypes["Category"];
             };
         };
     };
