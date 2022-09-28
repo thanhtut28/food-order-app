@@ -39,3 +39,12 @@ export const UpdateMenuItemInput = builder.inputType("UpdateMenuItemInput", {
       categoryId: t.int(),
    }),
 });
+
+export const FeaturedItemsResponse = builder.simpleObject("FeaturedItemsResponse", {
+   fields: t => ({
+      menuItem: t.field({
+         type: MenuItem,
+      }),
+      label: t.string(),
+   }),
+});

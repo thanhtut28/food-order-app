@@ -1,4 +1,4 @@
-import type { Prisma, User, MenuItem, Category, Cart, Order, Ingredient } from "@prisma/client";
+import type { Prisma, User, MenuItem, CartItem, OrderItem, Cart, Order, Category, Ingredient } from "@prisma/client";
 export default interface PrismaTypes {
     User: {
         Name: "User";
@@ -29,24 +29,108 @@ export default interface PrismaTypes {
         OrderBy: Prisma.MenuItemOrderByWithRelationInput;
         WhereUnique: Prisma.MenuItemWhereUniqueInput;
         Where: Prisma.MenuItemWhereInput;
-        RelationName: "category" | "orders" | "carts" | "ingredients";
-        ListRelations: "orders" | "carts" | "ingredients";
+        RelationName: "category" | "cartItems" | "orderItems" | "ingredients";
+        ListRelations: "cartItems" | "orderItems" | "ingredients";
         Relations: {
             category: {
                 Shape: Category | null;
                 Types: PrismaTypes["Category"];
             };
-            orders: {
-                Shape: Order[];
-                Types: PrismaTypes["Order"];
+            cartItems: {
+                Shape: CartItem[];
+                Types: PrismaTypes["CartItem"];
             };
-            carts: {
-                Shape: Cart[];
-                Types: PrismaTypes["Cart"];
+            orderItems: {
+                Shape: OrderItem[];
+                Types: PrismaTypes["OrderItem"];
             };
             ingredients: {
                 Shape: Ingredient[];
                 Types: PrismaTypes["Ingredient"];
+            };
+        };
+    };
+    CartItem: {
+        Name: "CartItem";
+        Shape: CartItem;
+        Include: Prisma.CartItemInclude;
+        Select: Prisma.CartItemSelect;
+        OrderBy: Prisma.CartItemOrderByWithRelationInput;
+        WhereUnique: Prisma.CartItemWhereUniqueInput;
+        Where: Prisma.CartItemWhereInput;
+        RelationName: "menuItem" | "cart";
+        ListRelations: never;
+        Relations: {
+            menuItem: {
+                Shape: MenuItem;
+                Types: PrismaTypes["MenuItem"];
+            };
+            cart: {
+                Shape: Cart;
+                Types: PrismaTypes["Cart"];
+            };
+        };
+    };
+    OrderItem: {
+        Name: "OrderItem";
+        Shape: OrderItem;
+        Include: Prisma.OrderItemInclude;
+        Select: Prisma.OrderItemSelect;
+        OrderBy: Prisma.OrderItemOrderByWithRelationInput;
+        WhereUnique: Prisma.OrderItemWhereUniqueInput;
+        Where: Prisma.OrderItemWhereInput;
+        RelationName: "menuItem" | "order";
+        ListRelations: never;
+        Relations: {
+            menuItem: {
+                Shape: MenuItem;
+                Types: PrismaTypes["MenuItem"];
+            };
+            order: {
+                Shape: Order;
+                Types: PrismaTypes["Order"];
+            };
+        };
+    };
+    Cart: {
+        Name: "Cart";
+        Shape: Cart;
+        Include: Prisma.CartInclude;
+        Select: Prisma.CartSelect;
+        OrderBy: Prisma.CartOrderByWithRelationInput;
+        WhereUnique: Prisma.CartWhereUniqueInput;
+        Where: Prisma.CartWhereInput;
+        RelationName: "user" | "cartItems";
+        ListRelations: "cartItems";
+        Relations: {
+            user: {
+                Shape: User;
+                Types: PrismaTypes["User"];
+            };
+            cartItems: {
+                Shape: CartItem[];
+                Types: PrismaTypes["CartItem"];
+            };
+        };
+    };
+    Order: {
+        Name: "Order";
+        Shape: Order;
+        Include: Prisma.OrderInclude;
+        Select: Prisma.OrderSelect;
+        OrderBy: Prisma.OrderOrderByWithRelationInput;
+        WhereUnique: Prisma.OrderWhereUniqueInput;
+        Where: Prisma.OrderWhereInput;
+        RelationName: "user" | "orderItems";
+        ListRelations: "orderItems";
+        Relations: {
+            user: {
+                Shape: User;
+                Types: PrismaTypes["User"];
+            };
+            orderItems: {
+                Shape: OrderItem[];
+                Types: PrismaTypes["OrderItem"];
             };
         };
     };
@@ -68,48 +152,6 @@ export default interface PrismaTypes {
             ingredients: {
                 Shape: Ingredient[];
                 Types: PrismaTypes["Ingredient"];
-            };
-        };
-    };
-    Cart: {
-        Name: "Cart";
-        Shape: Cart;
-        Include: Prisma.CartInclude;
-        Select: Prisma.CartSelect;
-        OrderBy: Prisma.CartOrderByWithRelationInput;
-        WhereUnique: Prisma.CartWhereUniqueInput;
-        Where: Prisma.CartWhereInput;
-        RelationName: "user" | "menuItems";
-        ListRelations: "menuItems";
-        Relations: {
-            user: {
-                Shape: User;
-                Types: PrismaTypes["User"];
-            };
-            menuItems: {
-                Shape: MenuItem[];
-                Types: PrismaTypes["MenuItem"];
-            };
-        };
-    };
-    Order: {
-        Name: "Order";
-        Shape: Order;
-        Include: Prisma.OrderInclude;
-        Select: Prisma.OrderSelect;
-        OrderBy: Prisma.OrderOrderByWithRelationInput;
-        WhereUnique: Prisma.OrderWhereUniqueInput;
-        Where: Prisma.OrderWhereInput;
-        RelationName: "user" | "menuItems";
-        ListRelations: "menuItems";
-        Relations: {
-            user: {
-                Shape: User;
-                Types: PrismaTypes["User"];
-            };
-            menuItems: {
-                Shape: MenuItem[];
-                Types: PrismaTypes["MenuItem"];
             };
         };
     };

@@ -36,9 +36,49 @@ model MenuItem {
   price       Float
   categoryId  Int?
   category    Category?    @relation(fields: [categoryId], references: [id])
-  orders      Order[]
-  carts       Cart[]
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
   ingredients Ingredient[]
+}
+
+model CartItem {
+  id         Int      @id @default(autoincrement())
+  quantity   Int
+  menuItemId Int
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  cartId     Int
+  cart       Cart     @relation(fields: [cartId], references: [id])
+  total      Float
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  menuItemId Int
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  orderId    Int
+  order      Order    @relation(fields: [orderId], references: [id])
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  updatedAt DateTime   @updatedAt
+  createdAt DateTime   @default(now())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id])
+  cartItems CartItem[]
+}
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  updatedAt  DateTime    @updatedAt
+  createdAt  DateTime    @default(now())
+  total      Float
+  active     Boolean
+  userId     Int
+  user       User        @relation(fields: [userId], references: [id])
+  orderItems OrderItem[]
 }
 
 model Category {
@@ -48,26 +88,6 @@ model Category {
   name        String       @unique
   menuItems   MenuItem[]
   ingredients Ingredient[]
-}
-
-model Cart {
-  id        Int        @id @default(autoincrement())
-  updatedAt DateTime   @updatedAt
-  createdAt DateTime   @default(now())
-  userId    Int        @unique
-  user      User       @relation(fields: [userId], references: [id])
-  menuItems MenuItem[]
-}
-
-model Order {
-  id         Int        @id @default(autoincrement())
-  updatedAt  DateTime   @updatedAt
-  createdAt  DateTime   @default(now())
-  userId     Int
-  totalPrice Float
-  active     Boolean
-  user       User       @relation(fields: [userId], references: [id])
-  menuItems  MenuItem[]
 }
 
 model Ingredient {

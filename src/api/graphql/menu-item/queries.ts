@@ -1,20 +1,21 @@
 import { MenuItem } from "@prisma/client";
 import { db } from "../../../utils/db";
 import { builder } from "../../builder";
+import { FeaturedItemsResponse } from "./schema";
 
 builder.queryFields(t => ({
    getAllMenuItems: t.prismaField({
       type: ["MenuItem"],
       skipTypeScopes: true,
-      resolve: async (query, _) => {
+      resolve: async query => {
          return db.menuItem.findMany({
             ...query,
             where: {
                ingredients: {
                   some: {
                      // query items that have at least one ingredient.
-                     id: {
-                        notIn: [],
+                     name: {
+                        contains: "beef",
                      },
                   },
                },
@@ -29,14 +30,17 @@ builder.queryFields(t => ({
       args: {
          categoryId: t.arg({
             type: "Int",
-            required: true,
          }),
       },
       resolve: async (query, _, { categoryId }) => {
          return db.menuItem.findMany({
             ...query,
             where: {
-               categoryId,
+               ...(categoryId ? { categoryId } : {}),
+            },
+            orderBy: {
+               categoryId: "asc",
+               // name: "asc",
             },
          });
       },
@@ -65,35 +69,26 @@ builder.queryFields(t => ({
       },
    }),
 
-   getBannerItems: t.prismaField({
+   getFeaturedItems: t.prismaField({
       type: ["MenuItem"],
-      nullable: true,
       skipTypeScopes: true,
-      resolve: async (query, _) => {
-         const chickenBurger = await db.menuItem.findFirst({
-            where: {
-               ingredients: {
-                  some: {
-                     name: "fried chicken",
-                  },
-               },
-            },
-         });
-         const beefBurger = await db.menuItem.findFirst({
-            where: {
-               ingredients: {
-                  some: {
-                     name: "grilled beef",
-                  },
-               },
-            },
-         });
+      resolve: async query => {
+         const categories = await db.category.findMany({ select: { name: true } });
+         let menuItems: MenuItem[] = [];
 
-         if (!chickenBurger || !beefBurger) {
-            return null;
+         for (let i = 0; i < categories.length; i++) {
+            const item = await db.menuItem.findFirst({
+               ...query,
+               where: {
+                  category: categories[i],
+               },
+            });
+            if (item) {
+               menuItems.push(item);
+            }
          }
 
-         return [chickenBurger, beefBurger];
+         return menuItems;
       },
    }),
 }));
