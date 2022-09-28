@@ -1,1 +1,2 @@
 import "./schema";
+import "./mutations";
