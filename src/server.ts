@@ -40,7 +40,7 @@ import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-co
    const apolloServer = new ApolloServer({
       schema,
       context: ({ req, res }) => ({ req, res, redis: redisClient }),
-      plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
+      // plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
    });
 
    await apolloServer.start();

@@ -48,3 +48,10 @@ export const FeaturedItemsResponse = builder.simpleObject("FeaturedItemsResponse
       label: t.string(),
    }),
 });
+
+export const GetMenuItemsInput = builder.inputType("GetMenuItemsInput", {
+   fields: t => ({
+      categoryId: t.int(),
+      cursor: t.int(),
+   }),
+});
