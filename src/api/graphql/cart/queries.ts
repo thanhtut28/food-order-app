@@ -9,7 +9,7 @@ builder.queryFields(t => ({
       resolve: async (_query, _, {}, { req }) => {
          const cart = await db.cart.findUnique({
             where: {
-               userId: 159,
+               userId: req.session.userId,
             },
             // include: {
             //    cartItems: {

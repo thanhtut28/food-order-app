@@ -8,4 +8,4 @@ export const usernameSchema = z
 export const passwordSchema = z
    .string()
    .min(4, { message: "Password must be 4 or more characters long" })
-   .max(20, { message: "Must be 20 or fewer characters long" });
+   .max(20, { message: "Password must be 20 or fewer characters long" });

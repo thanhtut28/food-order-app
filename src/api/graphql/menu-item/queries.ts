@@ -1,7 +1,7 @@
 import { MenuItem } from "@prisma/client";
 import { db } from "../../../utils/db";
 import { builder } from "../../builder";
-import { FeaturedItemsResponse } from "./schema";
+import { FeaturedItemsResponse, GetMenuItemsInput } from "./schema";
 
 builder.queryFields(t => ({
    getAllMenuItems: t.prismaField({
@@ -28,18 +28,29 @@ builder.queryFields(t => ({
       type: ["MenuItem"],
       skipTypeScopes: true,
       args: {
-         categoryId: t.arg({
-            type: "Int",
+         input: t.arg({
+            type: GetMenuItemsInput,
+            required: true,
          }),
       },
-      resolve: async (query, _, { categoryId }) => {
+      resolve: async (query, _, { input: { categoryId, cursor } }) => {
          return db.menuItem.findMany({
             ...query,
+            ...(cursor
+               ? {
+                    skip: 1,
+                    cursor: {
+                       id: cursor,
+                    },
+                 }
+               : {}),
+            take: 8,
             where: {
                ...(categoryId ? { categoryId } : {}),
             },
             orderBy: {
-               categoryId: "asc",
+               // categoryId: "asc",
+               id: "asc",
                // name: "asc",
             },
          });
