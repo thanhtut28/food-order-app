@@ -1,5 +1,7 @@
+import { Cart, CartItem } from "@prisma/client";
 import { db } from "../../../utils/db";
 import { builder } from "../../builder";
+import { CartActionsInput } from "./schema";
 
 builder.mutationFields(t => ({
    createNewCart: t.prismaField({
@@ -21,6 +23,100 @@ builder.mutationFields(t => ({
                userId: user.id,
             },
          });
+      },
+   }),
+
+   addToCart: t.prismaField({
+      type: "Cart",
+      nullable: true,
+      skipTypeScopes: true,
+      args: {
+         input: t.arg({
+            type: CartActionsInput,
+            required: true,
+         }),
+      },
+      resolve: async (query, _, { input: { cartId, menuItemId } }) => {
+         const existingItem = await db.cartItem.findFirst({ where: { menuItemId, cartId } });
+
+         const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
+
+         const cart = await db.cart.update({
+            where: {
+               id: cartId,
+            },
+            data: {
+               ...query,
+               cartItems: {
+                  ...(!existingItem
+                     ? {
+                          create: { menuItemId, quantity: 1, total: menuItem?.price! },
+                       }
+                     : {
+                          update: {
+                             data: {
+                                quantity: { increment: 1 },
+                                total: { increment: menuItem?.price! },
+                             },
+                             where: {
+                                id: existingItem.id,
+                             },
+                          },
+                       }),
+               },
+            },
+         });
+
+         return cart;
+      },
+   }),
+
+   removeFromCart: t.prismaField({
+      type: "Cart",
+      args: {
+         input: t.arg({
+            type: CartActionsInput,
+            required: true,
+         }),
+      },
+      nullable: true,
+      skipTypeScopes: true,
+      resolve: async (query, _, { input: { cartId, menuItemId } }) => {
+         const cartItem = (await db.cartItem.findFirst({
+            where: { cartId, menuItemId },
+         })) as CartItem;
+
+         const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
+
+         const cart = await db.cart.update({
+            where: {
+               id: cartId,
+            },
+            data: {
+               ...query,
+               cartItems: {
+                  ...(cartItem.quantity === 1
+                     ? {
+                          delete: {
+                             id: cartItem.id,
+                          },
+                       }
+                     : {
+                          update: {
+                             data: {
+                                quantity: { decrement: 1 },
+                                total: { decrement: menuItem?.price! },
+                             },
+                             where: {
+                                id: cartItem.id,
+                             },
+                          },
+                       }),
+               },
+            },
+         });
+
+         return cart;
       },
    }),
 }));

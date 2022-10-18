@@ -3,3 +3,4 @@ import "./menu-item";
 import "./category";
 import "./ingredient";
 import "./cart";
+import "./cart-item";
