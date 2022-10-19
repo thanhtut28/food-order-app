@@ -48,20 +48,20 @@ builder.mutationFields(t => ({
             data: {
                ...query,
                cartItems: {
-                  ...(!existingItem
+                  ...(existingItem
                      ? {
                           create: { menuItemId, quantity: 1, total: menuItem?.price! },
                        }
                      : {
-                          update: {
-                             data: {
-                                quantity: { increment: 1 },
-                                total: { increment: menuItem?.price! },
-                             },
-                             where: {
-                                id: existingItem.id,
-                             },
-                          },
+                          //   update: {
+                          //      data: {
+                          //         quantity: { increment: 1 },
+                          //         total: { increment: menuItem?.price! },
+                          //      },
+                          //      where: {
+                          //         id: existingItem.id,
+                          //      },
+                          //   },
                        }),
                },
             },
@@ -98,7 +98,10 @@ builder.mutationFields(t => ({
                   ...(cartItem.quantity === 1
                      ? {
                           delete: {
-                             id: cartItem.id,
+                             cartId_menuItemId: {
+                                cartId,
+                                menuItemId,
+                             },
                           },
                        }
                      : {
@@ -108,7 +111,10 @@ builder.mutationFields(t => ({
                                 total: { decrement: menuItem?.price! },
                              },
                              where: {
-                                id: cartItem.id,
+                                cartId_menuItemId: {
+                                   cartId,
+                                   menuItemId,
+                                },
                              },
                           },
                        }),

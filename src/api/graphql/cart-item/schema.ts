@@ -3,12 +3,19 @@ import { builder } from "../../builder";
 
 builder.prismaObject("CartItem", {
    fields: t => ({
-      id: t.exposeInt("id"),
       quantity: t.exposeInt("quantity"),
       menuItemId: t.exposeInt("menuItemId"),
       cartId: t.exposeInt("cartId"),
       menuItem: t.relation("menuItem"),
-      cart: t.relation("menuItem"),
+      cart: t.relation("cart"),
       total: t.exposeFloat("total"),
+   }),
+});
+
+export const GetCartItemsInput = builder.inputType("GetCartItemsInput", {
+   fields: t => ({
+      cartId: t.int({ required: true }),
+      cursor_cartId: t.int(),
+      cursor_menuItemId: t.int(),
    }),
 });
