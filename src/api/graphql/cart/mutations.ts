@@ -1,13 +1,15 @@
 import { Cart, CartItem } from "@prisma/client";
 import { db } from "../../../utils/db";
+import errorHandler from "../../../utils/error-handler";
 import { builder } from "../../builder";
 import { CartActionsInput } from "./schema";
 
 builder.mutationFields(t => ({
-   createNewCart: t.prismaField({
-      type: "Cart",
-      nullable: true,
-      resolve: async (query, _, {}, { req, res }) => {
+   createNewCart: t.field({
+      type: "Boolean",
+      skipTypeScopes: true,
+      resolve: async (_, {}, { req, res }) => {
+         //TODO: to optimize code
          const user = await db.user.findUnique({
             where: {
                id: req.session.userId,
@@ -15,14 +17,21 @@ builder.mutationFields(t => ({
          });
 
          if (!user) {
-            return null;
+            errorHandler.throwAuthError();
+            return false;
          }
 
-         return db.cart.create({
-            data: {
-               userId: user.id,
-            },
-         });
+         try {
+            await db.cart.create({
+               data: {
+                  userId: user.id,
+               },
+            });
+            return true;
+         } catch (e) {
+            errorHandler.throwDbError({ message: "Failed to create cart" });
+            return false;
+         }
       },
    }),
 
@@ -46,22 +55,25 @@ builder.mutationFields(t => ({
                id: cartId,
             },
             data: {
-               ...query,
+               // ...query,
                cartItems: {
-                  ...(existingItem
+                  ...(!existingItem
                      ? {
                           create: { menuItemId, quantity: 1, total: menuItem?.price! },
                        }
                      : {
-                          //   update: {
-                          //      data: {
-                          //         quantity: { increment: 1 },
-                          //         total: { increment: menuItem?.price! },
-                          //      },
-                          //      where: {
-                          //         id: existingItem.id,
-                          //      },
-                          //   },
+                          update: {
+                             data: {
+                                quantity: { increment: 1 },
+                                total: { increment: menuItem?.price! },
+                             },
+                             where: {
+                                cartId_menuItemId: {
+                                   cartId,
+                                   menuItemId,
+                                },
+                             },
+                          },
                        }),
                },
             },

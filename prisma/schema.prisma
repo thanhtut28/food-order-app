@@ -25,6 +25,7 @@ model User {
   password  String
   orders    Order[]
   cart      Cart?
+  // TODO: to fix foreign key constraint error while deleting
 }
 
 model MenuItem {
@@ -67,7 +68,7 @@ model Cart {
   updatedAt DateTime   @updatedAt
   createdAt DateTime   @default(now())
   userId    Int        @unique
-  user      User       @relation(fields: [userId], references: [id])
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   cartItems CartItem[]
 }
 

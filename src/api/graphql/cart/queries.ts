@@ -1,4 +1,5 @@
 import { db } from "../../../utils/db";
+import errorHandler from "../../../utils/error-handler";
 import { builder } from "../../builder";
 
 builder.queryFields(t => ({
@@ -6,21 +7,20 @@ builder.queryFields(t => ({
       type: "Cart",
       nullable: true,
       skipTypeScopes: true,
-      resolve: async (_query, _, {}, { req }) => {
-         const cart = await db.cart.findUnique({
+      resolve: async (query, _, {}, { req }) => {
+         //TODO: to optimize code
+         const userId = req.session.userId;
+         if (!userId) {
+            return null;
+         }
+
+         const cart = await db.cart.findFirst({
+            ...query,
             where: {
-               userId: req.session.userId,
+               userId: userId,
             },
-            // include: {
-            //    cartItems: {
-            //       include: {
-            //          menuItem: true,
-            //       },
-            //       skip: 0,
-            //       take: 2,
-            //    },
-            // },
          });
+
          if (!cart) {
             return null;
          }

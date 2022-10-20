@@ -63,5 +63,6 @@ export const User = builder.prismaObject("User", {
       updatedAt: t.expose("updatedAt", {
          type: "DateTime",
       }),
+      cart: t.relation("cart"),
    }),
 });
