@@ -9,21 +9,22 @@ builder.queryFields(t => ({
          input: t.arg({ type: GetCartItemsInput, required: true }),
       },
       skipTypeScopes: true,
-      resolve: async (query, _, { input: { cartId, cursor_cartId, cursor_menuItemId } }) => {
+      resolve: async (query, _, { input: { cartId, cursor } }) => {
          return db.cartItem.findMany({
             ...query,
-            // ...(cursor
-            //    ? {
-            //         cursor: {
-            //            cartId_menuItemId: {
-            //               cartId: cursor_cartId,
-            //               menuItemId: cursor_menuItemId,
-            //            },
-            //         },
-            //         skip: 1,
-            //         take: 2,
-            //      }
-            //    : {}),
+            ...(cartId && cursor
+               ? {
+                    cursor: {
+                       cartId_menuItemId: {
+                          cartId: cartId,
+                          menuItemId: cursor,
+                       },
+                    },
+                    skip: 1,
+                 }
+               : {}),
+            take: 3,
+
             where: {
                cartId,
             },

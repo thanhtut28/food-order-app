@@ -15,7 +15,6 @@ builder.prismaObject("CartItem", {
 export const GetCartItemsInput = builder.inputType("GetCartItemsInput", {
    fields: t => ({
       cartId: t.int({ required: true }),
-      cursor_cartId: t.int(),
-      cursor_menuItemId: t.int(),
+      cursor: t.int(),
    }),
 });
