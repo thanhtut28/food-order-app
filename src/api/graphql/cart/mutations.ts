@@ -10,18 +10,18 @@ builder.mutationFields(t => ({
       skipTypeScopes: true,
       resolve: async (_, {}, { req, res }) => {
          //TODO: to optimize code
-         const user = await db.user.findUnique({
-            where: {
-               id: req.session.userId,
-            },
-         });
-
-         if (!user) {
-            errorHandler.throwAuthError();
-            return false;
-         }
-
          try {
+            const user = await db.user.findUnique({
+               where: {
+                  id: req.session.userId,
+               },
+            });
+
+            if (!user) {
+               errorHandler.throwAuthError();
+               return false;
+            }
+
             await db.cart.create({
                data: {
                   userId: user.id,
@@ -35,8 +35,8 @@ builder.mutationFields(t => ({
       },
    }),
 
-   addToCart: t.prismaField({
-      type: "Cart",
+   addToCart: t.field({
+      type: "Boolean",
       nullable: true,
       skipTypeScopes: true,
       args: {
@@ -45,41 +45,45 @@ builder.mutationFields(t => ({
             required: true,
          }),
       },
-      resolve: async (query, _, { input: { cartId, menuItemId } }) => {
+      resolve: async (_, { input: { cartId, menuItemId } }) => {
          const existingItem = await db.cartItem.findFirst({ where: { menuItemId, cartId } });
 
          const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
 
-         const cart = await db.cart.update({
-            where: {
-               id: cartId,
-            },
-            data: {
-               // ...query,
-               cartItems: {
-                  ...(!existingItem
-                     ? {
-                          create: { menuItemId, quantity: 1, total: menuItem?.price! },
-                       }
-                     : {
-                          update: {
-                             data: {
-                                quantity: { increment: 1 },
-                                total: { increment: menuItem?.price! },
-                             },
-                             where: {
-                                cartId_menuItemId: {
-                                   cartId,
-                                   menuItemId,
+         try {
+            await db.cart.update({
+               where: {
+                  id: cartId,
+               },
+               data: {
+                  // ...query,
+                  cartItems: {
+                     ...(!existingItem
+                        ? {
+                             create: { menuItemId, quantity: 1, total: menuItem?.price! },
+                          }
+                        : {
+                             update: {
+                                data: {
+                                   quantity: { increment: 1 },
+                                   total: { increment: menuItem?.price! },
+                                },
+                                where: {
+                                   cartId_menuItemId: {
+                                      cartId,
+                                      menuItemId,
+                                   },
                                 },
                              },
-                          },
-                       }),
+                          }),
+                  },
                },
-            },
-         });
+            });
 
-         return cart;
+            return true;
+         } catch (e) {
+            return false;
+         }
       },
    }),
 

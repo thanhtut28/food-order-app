@@ -23,8 +23,7 @@ builder.queryFields(t => ({
                     skip: 1,
                  }
                : {}),
-            take: 3,
-
+            // take: 3,
             where: {
                cartId,
             },
