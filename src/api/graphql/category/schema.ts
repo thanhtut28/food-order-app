@@ -11,7 +11,6 @@ export const Category = builder.prismaObject("Category", {
       }),
       name: t.exposeString("name"),
       menuItems: t.relation("menuItems"),
-      ingredients: t.relation("ingredients"),
       //   orders: t.relation("orders"),
       //   carts: t.relation("carts"),
    }),

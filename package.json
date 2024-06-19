@@ -9,6 +9,7 @@
       "dev:typecheck": "tsc --watch --noEmit",
       "build": "tsc",
       "seed:menu-items": "ts-node ./src/seed/menu-items.ts",
+      "seed:ingredients": "ts-node ./src/seed/ingredients.ts",
       "seed:categories": "ts-node ./src/seed/categories"
    },
    "dependencies": {

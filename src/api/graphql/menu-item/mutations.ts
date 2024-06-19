@@ -20,7 +20,7 @@ builder.mutationFields(t => ({
                name,
                photo,
                price,
-               ...(categoryId ? { categoryId } : {}),
+               categoryId,
             },
          });
       },
@@ -50,32 +50,36 @@ builder.mutationFields(t => ({
       },
    }),
 
-   addIngredientToItem: t.prismaField({
-      type: "MenuItem",
-      skipTypeScopes: true,
-      args: {
-         ingredients: t.arg({
-            type: ["String"],
-            required: true,
-         }),
-         itemId: t.arg({
-            type: "Int",
-            required: true,
-         }),
-      },
-      resolve: (query, _, { ingredients, itemId }) => {
-         const _ingredients = ingredients.map(ingredient => ({ name: ingredient }));
+   // addIngredientToItem: t.prismaField({
+   //    type: "MenuItem",
+   //    skipTypeScopes: true,
+   //    args: {
+   //       ingredients: t.arg({
+   //          type: ["String"],
+   //          required: true,
+   //       }),
+   //       itemId: t.arg({
+   //          type: "Int",
+   //          required: true,
+   //       }),
+   //       ingredientId: t.arg({
+   //          type: 'Int',
+   //          required: true
+   //       })
+   //    },
+   //    resolve: (query, _, { ingredients, itemId }) => {
+   //       const _ingredients = ingredients.map(ingredient => ({ name: ingredient }));
 
-         return db.menuItem.update({
-            where: {
-               id: itemId,
-            },
-            data: {
-               ingredients: {
-                  connect: _ingredients,
-               },
-            },
-         });
-      },
-   }),
+   //       return db.menuItem.update({
+   //          where: {
+   //             id: itemId,
+   //          },
+   //          data: {
+   //             ingredientItems: {
+   //                connect: _ingredients
+   //             },
+   //          },
+   //       });
+   //    },
+   // }),
 }));

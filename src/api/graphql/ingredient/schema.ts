@@ -10,14 +10,17 @@ export const Ingredient = builder.prismaObject("Ingredient", {
          type: "DateTime",
       }),
       name: t.exposeString("name"),
-      menuItems: t.relation("menuItems"),
-      categories: t.relation("categories"),
-   }),
-});
-
-export const CreateIngredientInput = builder.inputType("CreateIngredientInput", {
-   fields: t => ({
-      name: t.string({ required: true }),
-      categories: t.stringList({ required: true }),
+      // ingredientItems: t.field({
+      //    select: (_args, _ctx, nestedSelection) => ({
+      //       ingredientItems: {
+      //          select: {
+      //             menuItem: nestedSelection(true),
+      //          },
+      //       },
+      //    }),
+      //    type: [Ingredient],
+      //    resolve: ingredient => ingredient.ingredientItems.map(({ menuItem }) => menuItem),
+      // }),
+      ingredientItems: t.relation("ingredientItems"),
    }),
 });

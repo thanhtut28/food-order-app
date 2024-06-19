@@ -12,6 +12,7 @@ builder.prismaObject("Cart", {
       userId: t.exposeInt("userId"),
       user: t.relation("user"),
       cartItems: t.relation("cartItems"),
+      cartItemsCount: t.relationCount("cartItems"),
    }),
 });
 
@@ -19,5 +20,6 @@ export const CartActionsInput = builder.inputType("AddCartItemInput", {
    fields: t => ({
       menuItemId: t.int({ required: true }),
       cartId: t.int({ required: true }),
+      qty: t.int({ required: true }),
    }),
 });

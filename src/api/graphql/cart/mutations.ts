@@ -3,6 +3,7 @@ import { db } from "../../../utils/db";
 import errorHandler from "../../../utils/error-handler";
 import { builder } from "../../builder";
 import { CartActionsInput } from "./schema";
+import { delay } from "../../../utils/delay";
 
 builder.mutationFields(t => ({
    createNewCart: t.field({
@@ -45,10 +46,14 @@ builder.mutationFields(t => ({
             required: true,
          }),
       },
-      resolve: async (_, { input: { cartId, menuItemId } }) => {
+      resolve: async (_, { input: { cartId, menuItemId, qty } }, { req }) => {
          const existingItem = await db.cartItem.findFirst({ where: { menuItemId, cartId } });
 
          const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
+
+         await delay();
+
+         const total = menuItem?.price! * qty;
 
          try {
             await db.cart.update({
@@ -60,13 +65,15 @@ builder.mutationFields(t => ({
                   cartItems: {
                      ...(!existingItem
                         ? {
-                             create: { menuItemId, quantity: 1, total: menuItem?.price! },
+                             create: { menuItemId, quantity: qty, total },
                           }
                         : {
                              update: {
                                 data: {
-                                   quantity: { increment: 1 },
-                                   total: { increment: menuItem?.price! },
+                                   quantity: { increment: qty },
+                                   total: {
+                                      increment: total,
+                                   },
                                 },
                                 where: {
                                    cartId_menuItemId: {
@@ -82,6 +89,7 @@ builder.mutationFields(t => ({
 
             return true;
          } catch (e) {
+            console.log(e);
             return false;
          }
       },

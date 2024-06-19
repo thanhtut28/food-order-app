@@ -1,4 +1,5 @@
 import { builder } from "../../builder";
+import { Ingredient } from "../ingredient/schema";
 
 export const MenuItem = builder.prismaObject("MenuItem", {
    fields: t => ({
@@ -12,10 +13,21 @@ export const MenuItem = builder.prismaObject("MenuItem", {
       name: t.exposeString("name"),
       photo: t.exposeString("photo"),
       price: t.exposeFloat("price"),
-      categortId: t.exposeInt("categoryId", { nullable: true }),
-      category: t.relation("category", { nullable: true }),
-      ingredients: t.relation("ingredients"),
-      ingredientsCount: t.relationCount("ingredients"),
+      categortId: t.exposeInt("categoryId"),
+      category: t.relation("category"),
+      // ingredientItems: t.field({
+      //    select: (_args, _ctx, nestedSelection) => ({
+      //       ingredientItems: {
+      //          select: {
+      //             ingredient: nestedSelection(true),
+      //          },
+      //       },
+      //    }),
+      //    type: [Ingredient],
+      //    resolve: menuItem => menuItem.ingredientItems.map(({ ingredient }) => ingredient),
+      // }),
+      ingredientItems: t.relation("ingredientItems"),
+
       //   orders: t.relation("orders"),
       //   carts: t.relation("carts"),
    }),
@@ -26,7 +38,7 @@ export const CreateMenuItemInput = builder.inputType("CreateMenuItemInput", {
       name: t.string({ required: true }),
       photo: t.string({ required: true }),
       price: t.float({ required: true }),
-      categoryId: t.int(),
+      categoryId: t.int({ required: true }),
    }),
 });
 

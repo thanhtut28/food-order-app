@@ -4,3 +4,4 @@ import "./category";
 import "./ingredient";
 import "./cart";
 import "./cart-item";
+import "./ingredient-item";

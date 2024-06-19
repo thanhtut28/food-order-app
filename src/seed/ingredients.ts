@@ -1,14 +1,48 @@
 import { db } from "../utils/db";
 
-const seedData = async () => {
+(async () => {
    const ingredients = await db.ingredient.createMany({
       data: [
          {
-            name: "grilled beef",
+            name: "bread",
          },
          {
-            name: "",
+            name: "lettuce",
+         },
+         {
+            name: "mushroom",
+         },
+         {
+            name: "tomato",
+         },
+         {
+            name: "cheese",
+         },
+         {
+            name: "chicken",
+         },
+         {
+            name: "sausage",
+         },
+         {
+            name: "salami",
+         },
+         {
+            name: "bacon",
+         },
+         {
+            name: "patty",
+         },
+         {
+            name: "onion",
+         },
+         {
+            name: "ham",
+         },
+         {
+            name: "ribs",
          },
       ],
    });
-};
+   return ingredients;
+})();

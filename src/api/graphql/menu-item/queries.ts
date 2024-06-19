@@ -10,16 +10,19 @@ builder.queryFields(t => ({
       resolve: async query => {
          return db.menuItem.findMany({
             ...query,
-            where: {
-               ingredients: {
-                  some: {
-                     // query items that have at least one ingredient.
-                     name: {
-                        contains: "beef",
-                     },
-                  },
-               },
-            },
+            // where: {
+            //    ingredientItems: {
+            //       some: {
+            //          // query items that have at least one ingredient.
+            //          menuItemId: {
+            //             not: undefined,
+            //          },
+            //          ingredientId: {
+            //             not: undefined,
+            //          },
+            //       },
+            //    },
+            // },
          });
       },
    }),
@@ -57,28 +60,28 @@ builder.queryFields(t => ({
       },
    }),
 
-   getMenuItemsByIngredient: t.prismaField({
-      type: ["MenuItem"],
-      skipTypeScopes: true,
-      args: {
-         ingredientId: t.arg({
-            type: "Int",
-            required: true,
-         }),
-      },
-      resolve: async (query, _, { ingredientId }) => {
-         return db.menuItem.findMany({
-            ...query,
-            where: {
-               ingredients: {
-                  some: {
-                     id: ingredientId,
-                  },
-               },
-            },
-         });
-      },
-   }),
+   // getMenuItemsByIngredient: t.prismaField({
+   //    type: ["MenuItem"],
+   //    skipTypeScopes: true,
+   //    args: {
+   //       ingredientId: t.arg({
+   //          type: "Int",
+   //          required: true,
+   //       }),
+   //    },
+   //    resolve: async (query, _, { ingredientId }) => {
+   //       return db.menuItem.findMany({
+   //          ...query,
+   //          where: {
+   //             ingredientItems: {
+   //                some: {
+   //                   ingredientId: ingredientId,
+   //                },
+   //             },
+   //          },
+   //       });
+   //    },
+   // }),
 
    getFeaturedItems: t.prismaField({
       type: ["MenuItem"],
@@ -100,6 +103,32 @@ builder.queryFields(t => ({
          }
 
          return menuItems;
+      },
+   }),
+
+   getMenuItemBySlug: t.prismaField({
+      type: "MenuItem",
+      skipTypeScopes: true,
+      nullable: true,
+      args: {
+         slug: t.arg({
+            type: "Int",
+            required: true,
+         }),
+      },
+      resolve: async (query, _, { slug }) => {
+         const item = await db.menuItem.findUnique({
+            ...query,
+            where: { id: slug },
+            include: {
+               ingredientItems: {
+                  include: { ingredient: true },
+                  orderBy: { order: "asc" },
+               },
+            },
+         });
+
+         return item;
       },
    }),
 }));

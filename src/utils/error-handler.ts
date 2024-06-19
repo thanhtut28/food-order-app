@@ -6,6 +6,13 @@ interface ErrorArgs {
    message: string;
 }
 
+/**
+ * Represents Error class which catches multiple errors
+ * @class
+ * @method throwBaseError
+ * catch default Error
+ *
+ */
 class ErrorHandler {
    throwAuthError(): never {
       throw new AuthenticationError(ErrorMessage.NOT_AUTHENTICATED);

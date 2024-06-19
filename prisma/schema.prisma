@@ -30,17 +30,17 @@ model User {
 }
 
 model MenuItem {
-  id          Int          @id @default(autoincrement())
-  updatedAt   DateTime     @updatedAt
-  createdAt   DateTime     @default(now())
-  name        String       @unique
-  photo       String
-  price       Float
-  categoryId  Int?
-  category    Category?    @relation(fields: [categoryId], references: [id])
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
-  ingredients Ingredient[]
+  id              Int              @id @default(autoincrement())
+  updatedAt       DateTime         @updatedAt
+  createdAt       DateTime         @default(now())
+  name            String           @unique
+  photo           String
+  price           Float
+  categoryId      Int
+  category        Category         @relation(fields: [categoryId], references: [id])
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  ingredientItems IngreidentItem[]
 }
 
 model CartItem {
@@ -84,23 +84,36 @@ model Order {
   active     Boolean
   userId     Int
   user       User        @relation(fields: [userId], references: [id])
+  //TODO: may be needed to add onDelete: Cascade
   orderItems OrderItem[]
 }
 
 model Category {
-  id          Int          @id @default(autoincrement())
-  updatedAt   DateTime     @updatedAt
-  createdAt   DateTime     @default(now())
-  name        String       @unique
-  menuItems   MenuItem[]
-  ingredients Ingredient[]
+  id        Int        @id @default(autoincrement())
+  updatedAt DateTime   @updatedAt
+  createdAt DateTime   @default(now())
+  name      String     @unique
+  menuItems MenuItem[]
 }
 
 model Ingredient {
-  id         Int        @id @default(autoincrement())
-  updatedAt  DateTime   @updatedAt
-  createdAt  DateTime   @default(now())
-  name       String     @unique
-  menuItems  MenuItem[]
-  categories Category[]
+  id              Int              @id @default(autoincrement())
+  updatedAt       DateTime         @updatedAt
+  createdAt       DateTime         @default(now())
+  name            String           @unique
+  ingredientItems IngreidentItem[]
+}
+
+model IngreidentItem {
+  id           Int        @id @default(autoincrement())
+  order        Int
+  updatedAt    DateTime   @updatedAt
+  createdAt    DateTime   @default(now())
+  menuItemId   Int
+  menuItem     MenuItem   @relation(fields: [menuItemId], references: [id])
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+
+  //* To prevent duplicate order in a single menu item
+  @@unique([order, menuItemId])
 }
