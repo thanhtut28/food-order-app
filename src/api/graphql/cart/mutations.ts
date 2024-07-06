@@ -1,15 +1,13 @@
-import { Cart, CartItem } from "@prisma/client";
+import { CartItem } from "@prisma/client";
 import { db } from "../../../utils/db";
 import errorHandler from "../../../utils/error-handler";
 import { builder } from "../../builder";
 import { CartActionsInput } from "./schema";
-import { delay } from "../../../utils/delay";
 
 builder.mutationFields(t => ({
    createNewCart: t.field({
       type: "Boolean",
-      skipTypeScopes: true,
-      resolve: async (_, {}, { req, res }) => {
+      resolve: async (_, {}, { req }) => {
          //TODO: to optimize code
          try {
             const user = await db.user.findUnique({
@@ -36,117 +34,118 @@ builder.mutationFields(t => ({
       },
    }),
 
-   addToCart: t.field({
-      type: "Boolean",
-      nullable: true,
-      skipTypeScopes: true,
-      args: {
-         input: t.arg({
-            type: CartActionsInput,
-            required: true,
-         }),
-      },
-      resolve: async (_, { input: { cartId, menuItemId, qty } }, { req }) => {
-         const existingItem = await db.cartItem.findFirst({ where: { menuItemId, cartId } });
+   //! AddToCart will be used in the Cart Item mutations. Will be deleted later.
+   // addToCart: t.field({
+   //    type: "Boolean",
+   //    nullable: true,
+   //    args: {
+   //       input: t.arg({
+   //          type: CartActionsInput,
+   //          required: true,
+   //       }),
+   //    },
+   //    resolve: async (query, { input: { cartId, menuItemId, qty } }) => {
+   //       const existingItem = await db.cartItem.findFirst({ where: { menuItemId, cartId } });
 
-         const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
+   //       const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
 
-         await delay();
+   //       // await delay();
 
-         const total = menuItem?.price! * qty;
+   //       const total = menuItem?.price! * qty;
 
-         try {
-            await db.cart.update({
-               where: {
-                  id: cartId,
-               },
-               data: {
-                  // ...query,
-                  cartItems: {
-                     ...(!existingItem
-                        ? {
-                             create: { menuItemId, quantity: qty, total },
-                          }
-                        : {
-                             update: {
-                                data: {
-                                   quantity: { increment: qty },
-                                   total: {
-                                      increment: total,
-                                   },
-                                },
-                                where: {
-                                   cartId_menuItemId: {
-                                      cartId,
-                                      menuItemId,
-                                   },
-                                },
-                             },
-                          }),
-                  },
-               },
-            });
+   //       try {
+   //          await db.cart.update({
+   //             where: {
+   //                id: cartId,
+   //             },
 
-            return true;
-         } catch (e) {
-            console.log(e);
-            return false;
-         }
-      },
-   }),
+   //             data: {
+   //                ...query,
+   //                cartItems: {
+   //                   ...(!existingItem
+   //                      ? {
+   //                           create: { menuItemId, quantity: qty, total },
+   //                        }
+   //                      : {
+   //                           update: {
+   //                              data: {
+   //                                 quantity: { increment: qty },
+   //                                 total: {
+   //                                    increment: total,
+   //                                 },
+   //                              },
+   //                              where: {
+   //                                 cartId_menuItemId: {
+   //                                    cartId,
+   //                                    menuItemId,
+   //                                 },
+   //                              },
+   //                           },
+   //                        }),
+   //                },
+   //             },
+   //          });
 
-   removeFromCart: t.prismaField({
-      type: "Cart",
-      args: {
-         input: t.arg({
-            type: CartActionsInput,
-            required: true,
-         }),
-      },
-      nullable: true,
-      skipTypeScopes: true,
-      resolve: async (query, _, { input: { cartId, menuItemId } }) => {
-         const cartItem = (await db.cartItem.findFirst({
-            where: { cartId, menuItemId },
-         })) as CartItem;
+   //          return true;
+   //       } catch (e) {
+   //          console.log(e);
+   //          return false;
+   //       }
+   //    },
+   // }),
 
-         const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
+   // removeFromCart: t.prismaField({
+   //    type: "Cart",
+   //    args: {
+   //       input: t.arg({
+   //          type: CartActionsInput,
+   //          required: true,
+   //       }),
+   //    },
+   //    nullable: true,
+   //    skipTypeScopes: true,
+   //    resolve: async (query, _, { input: { cartId, menuItemId } }) => {
+   //       const cartItem = (await db.cartItem.findFirst({
+   //          where: { cartId, menuItemId },
+   //       })) as CartItem;
 
-         const cart = await db.cart.update({
-            where: {
-               id: cartId,
-            },
-            data: {
-               ...query,
-               cartItems: {
-                  ...(cartItem.quantity === 1
-                     ? {
-                          delete: {
-                             cartId_menuItemId: {
-                                cartId,
-                                menuItemId,
-                             },
-                          },
-                       }
-                     : {
-                          update: {
-                             data: {
-                                quantity: { decrement: 1 },
-                                total: { decrement: menuItem?.price! },
-                             },
-                             where: {
-                                cartId_menuItemId: {
-                                   cartId,
-                                   menuItemId,
-                                },
-                             },
-                          },
-                       }),
-               },
-            },
-         });
+   //       const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
 
-         return cart;
-      },
-   }),
+   //       const cart = await db.cart.update({
+   //          where: {
+   //             id: cartId,
+   //          },
+   //          data: {
+   //             ...query,
+   //             cartItems: {
+   //                ...(cartItem.quantity === 1
+   //                   ? {
+   //                        delete: {
+   //                           cartId_menuItemId: {
+   //                              cartId,
+   //                              menuItemId,
+   //                           },
+   //                        },
+   //                     }
+   //                   : {
+   //                        update: {
+   //                           data: {
+   //                              quantity: { decrement: 1 },
+   //                              total: { decrement: menuItem?.price! },
+   //                           },
+   //                           where: {
+   //                              cartId_menuItemId: {
+   //                                 cartId,
+   //                                 menuItemId,
+   //                              },
+   //                           },
+   //                        },
+   //                     }),
+   //             },
+   //          },
+   //       });
+
+   //       return cart;
+   //    },
+   // }),
 }));

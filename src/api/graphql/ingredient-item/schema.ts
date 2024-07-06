@@ -1,6 +1,6 @@
 import { builder } from "../../builder";
 
-builder.prismaObject("IngreidentItem", {
+builder.prismaObject("IngredientItem", {
    fields: t => ({
       id: t.exposeInt("id"),
       order: t.exposeInt("order"),

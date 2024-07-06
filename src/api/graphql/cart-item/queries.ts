@@ -1,4 +1,6 @@
+import { ErrorMessage } from "../../../constants/message";
 import { db } from "../../../utils/db";
+import errorHandler from "../../../utils/error-handler";
 import { builder } from "../../builder";
 import { GetCartItemsInput } from "./schema";
 
@@ -14,18 +16,21 @@ builder.queryFields(t => ({
             ...query,
             ...(cartId && cursor
                ? {
+                    skip: 1,
                     cursor: {
                        cartId_menuItemId: {
-                          cartId: cartId,
+                          cartId,
                           menuItemId: cursor,
                        },
                     },
-                    skip: 1,
                  }
                : {}),
-            // take: 3,
+            take: 5,
             where: {
                cartId,
+            },
+            orderBy: {
+               createdAt: "desc",
             },
          });
       },

@@ -5,7 +5,22 @@ import { ErrorMessage } from "../../../constants/message";
 import { PRISMA_STATUS_CODES } from "../../../constants/status-code";
 import errorHandler from "../../../utils/error-handler";
 
-export function handleSignUpError(e: any) {
+interface AuthError {
+   field: ValuesFromEnum<typeof Field>;
+   message: string;
+}
+
+interface SchemaError {
+   field: ValuesFromEnum<typeof Field>;
+   message: string;
+}
+
+/**
+ * Handles authentication errors.
+ * @param {any} e - The error to handle.
+ * @returns {AuthError|null} An object containing the field and error message, or null if no specific error is handled.
+ */
+export function handleAuthError(e: any): AuthError | null {
    if (e instanceof Prisma.PrismaClientKnownRequestError) {
       if (e.code === PRISMA_STATUS_CODES.UNIQUE_CONSTRAINT) {
          if ((e as any).meta.target[0] === Field.USERNAME) {
@@ -28,7 +43,12 @@ export function handleSignUpError(e: any) {
    return null;
 }
 
-export function validateSchema(schemaData: any) {
+/**
+ * Validates a schema.
+ * @param {any} schemaData - The data to validate.
+ * @returns {SchemaError|null} An object containing the field and error message, or null if the schema is valid.
+ */
+export function validateSchema(schemaData: any): SchemaError | null {
    if (!schemaData.success) {
       const errorMessage = schemaData.error.issues[0].message;
       return {

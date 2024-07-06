@@ -8,16 +8,15 @@ builder.queryFields(t => ({
       nullable: true,
       skipTypeScopes: true,
       resolve: async (query, _, {}, { req }) => {
-         //TODO: to optimize code
-         const userId = req.session.userId;
-         if (!userId) {
-            return null;
-         }
+         // const userId = req.session.userId;
+         // if (!userId) {
+         //    return null;
+         // }
 
          const cart = await db.cart.findFirst({
             ...query,
             where: {
-               userId: userId,
+               userId: 2,
             },
          });
 

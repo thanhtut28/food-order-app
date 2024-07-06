@@ -1,10 +1,17 @@
 import { User } from "@prisma/client";
 import { compare, hash } from "bcryptjs";
+import { v4 } from "uuid";
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../../../constants/config";
 import { Field } from "../../../constants/enum";
 import { ErrorMessage } from "../../../constants/message";
 import { db } from "../../../utils/db";
 import errorHandler from "../../../utils/error-handler";
+import { sendEmail } from "../../../utils/sendEmail";
+import changePasswordValidator from "../../../validator/change-password";
 import signUpValidator from "../../../validator/sign-up";
+import updateAddressValidator from "../../../validator/update-address";
+import updateEmailValidator from "../../../validator/update-email";
+import updateUsernameValidator from "../../../validator/update-username";
 import { builder } from "../../builder";
 import {
    AuthenticationResponse,
@@ -13,13 +20,8 @@ import {
    SignInUserInput,
    SignUpUserInput,
 } from "./schema";
-import { handleSignUpError, validateSchema } from "./utils";
-import { v4 } from "uuid";
-import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../../../constants/config";
-import { sendEmail } from "../../../utils/sendEmail";
-import changePasswordValidator from "../../../validator/change-password";
-import updateUsernameValidator from "../../../validator/update-username";
-import updateEmailValidator from "../../../validator/update-email";
+import { handleAuthError, validateSchema } from "./utils";
+import signInValidator from "../../../validator/sign-in";
 
 builder.mutationFields(t => ({
    signUp: t.field({
@@ -48,7 +50,7 @@ builder.mutationFields(t => ({
                data: { email, password: hashedPassword, username },
             });
          } catch (err) {
-            const error = handleSignUpError(err);
+            const error = handleAuthError(err);
             if (error) {
                return { error, user: null };
             }
@@ -73,6 +75,14 @@ builder.mutationFields(t => ({
       },
 
       resolve: async (_root, { input: { email, password } }, { req }) => {
+         const schemaData = signInValidator(email);
+
+         const error = validateSchema(schemaData);
+
+         if (error) {
+            return { error, user: null };
+         }
+
          try {
             const user = await db.user.findUnique({
                where: {
@@ -234,7 +244,7 @@ builder.mutationFields(t => ({
          const error = validateSchema(schemaData);
 
          if (error) {
-            errorHandler.throwInputError({ message: error.message });
+            errorHandler.throwInputError({ ...error });
             return false;
          }
 
@@ -258,9 +268,10 @@ builder.mutationFields(t => ({
                data: { username },
             })
             .catch((e: unknown) => {
-               const err = handleSignUpError(e);
+               //* To catch again error for unique constraints
+               const err = handleAuthError(e);
                if (err) {
-                  errorHandler.throwInputError({ message: err.message });
+                  errorHandler.throwInputError({ ...err });
                }
                errorHandler.throwDbError({ message: ErrorMessage.CANNOT_UPDATE_USERNAME });
             });
@@ -282,7 +293,7 @@ builder.mutationFields(t => ({
          const error = validateSchema(schemaData);
 
          if (error) {
-            errorHandler.throwInputError({ message: error.message });
+            errorHandler.throwInputError({ ...error });
             return false;
          }
 
@@ -306,11 +317,46 @@ builder.mutationFields(t => ({
             })
             .catch((e: unknown) => {
                console.log(e);
-               const err = handleSignUpError(e);
+               const err = handleAuthError(e);
                if (err) {
-                  errorHandler.throwInputError({ message: err.message });
+                  //* To catch again error for unique constraints
+                  errorHandler.throwInputError({ ...err });
                }
-               errorHandler.throwDbError({ message: ErrorMessage.CANNOT_UPDATE_USERNAME });
+               errorHandler.throwDbError({ message: ErrorMessage.CANNOT_UPDATE_EMAIL });
+            });
+
+         return true;
+      },
+   }),
+
+   updateAddress: t.field({
+      type: "Boolean",
+      args: {
+         address: t.arg({
+            type: "String",
+            required: true,
+         }),
+      },
+      resolve: async (_root, { address }, { req }) => {
+         const schemaData = updateAddressValidator(address);
+
+         const error = validateSchema(schemaData);
+         console.log(error);
+         if (error) {
+            //*
+            errorHandler.throwInputError({ ...error });
+            return false;
+         }
+
+         await db.user
+            .update({
+               where: { id: req.session.userId },
+               data: { address },
+            })
+            .catch((e: unknown) => {
+               errorHandler.throwDbError({
+                  message: ErrorMessage.CANNOT_UPDATE_ADDRESS,
+               });
             });
 
          return true;

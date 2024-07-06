@@ -57,6 +57,7 @@ export const User = builder.prismaObject("User", {
       id: t.exposeInt("id"),
       username: t.exposeString("username"),
       email: t.exposeString("email"),
+      address: t.exposeString("address", { nullable: true }),
       createdAt: t.expose("createdAt", {
          type: "DateTime",
       }),

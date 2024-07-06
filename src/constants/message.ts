@@ -7,7 +7,10 @@ export const ErrorMessage = {
    INCORRECT_PASSWORD: `Incorrect Password`,
    TOKEN_EXPIRED: `Token Expired`,
    USER_NOT_EXIST: `User no longer exist`,
+   CART_DOES_NOT_EXIST: `Cart does not exist. Try again to logout and login again.`,
    SAME_PASSWORD: `Should set a new password`,
    CANNOT_UPDATE_USERNAME: `Failed to update username`,
+   CANNOT_UPDATE_EMAIL: `Failed to update email`,
+   CANNOT_UPDATE_ADDRESS: `Failed to update address`,
    NOT_AUTHENTICATED: "Not Authenticated",
 };

@@ -18,3 +18,26 @@ export const GetCartItemsInput = builder.inputType("GetCartItemsInput", {
       cursor: t.int(),
    }),
 });
+
+export const AddCartItemInput = builder.inputType("AddCartItemInput", {
+   fields: t => ({
+      cartId: t.int({ required: true }),
+      menuItemId: t.int({ required: true }),
+      quantity: t.int({ required: true }),
+   }),
+});
+
+export const RemoveCartItemInput = builder.inputType("RemoveCartItemInput", {
+   fields: t => ({
+      cartId: t.int({ required: true }),
+      menuItemId: t.int({ required: true }),
+   }),
+});
+
+export const UpdateCartItemInput = builder.inputType("UpdateCartItemInput", {
+   fields: t => ({
+      cartId: t.int({ required: true }),
+      menuItemId: t.int({ required: true }),
+      quantity: t.int({ required: true }),
+   }),
+});

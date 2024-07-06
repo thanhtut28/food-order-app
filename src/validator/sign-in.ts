@@ -1,18 +1,16 @@
 import { z, SafeParseReturnType } from "zod";
-import { emailSchema, passwordSchema } from "./schema";
+import { emailSchema } from "./schema";
 
 interface SignInInput {
    email: string;
-   password: string;
 }
 
 export type SignInSchemaData = SafeParseReturnType<SignInInput, SignInInput>;
 
-export default function signInValidator(email: string, password: string): SignInSchemaData {
-   const SignUpInput = z.object({
+export default function signInValidator(email: string): SignInSchemaData {
+   const SignInInput = z.object({
       email: emailSchema,
-      password: passwordSchema,
    });
 
-   return SignUpInput.safeParse({ email, password });
+   return SignInInput.safeParse({ email });
 }

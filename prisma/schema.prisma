@@ -23,10 +23,9 @@ model User {
   email     String   @unique
   username  String   @unique
   password  String
+  address   String?
   orders    Order[]
   cart      Cart?
-  // TODO: to fix foreign key constraint error while deleting
-  //! To check again becoz it may be worked properly at the last time.
 }
 
 model MenuItem {
@@ -40,16 +39,18 @@ model MenuItem {
   category        Category         @relation(fields: [categoryId], references: [id])
   cartItems       CartItem[]
   orderItems      OrderItem[]
-  ingredientItems IngreidentItem[]
+  ingredientItems IngredientItem[]
 }
 
 model CartItem {
   quantity   Int
-  menuItemId Int
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
   cartId     Int
-  cart       Cart     @relation(fields: [cartId], references: [id])
+  menuItemId Int
   total      Float
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  cart       Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
 
   @@id(fields: [cartId, menuItemId])
 }
@@ -58,11 +59,9 @@ model OrderItem {
   updatedAt  DateTime @updatedAt
   createdAt  DateTime @default(now())
   menuItemId Int
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   orderId    Int
-  order      Order    @relation(fields: [orderId], references: [id])
-
-  //TODO: needs to prisma generate
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@id(fields: [menuItemId, orderId])
 }
@@ -77,14 +76,14 @@ model Cart {
 }
 
 model Order {
-  id         Int         @id @default(autoincrement())
-  updatedAt  DateTime    @updatedAt
-  createdAt  DateTime    @default(now())
-  total      Float
-  active     Boolean
-  userId     Int
-  user       User        @relation(fields: [userId], references: [id])
-  //TODO: may be needed to add onDelete: Cascade
+  id        Int      @id @default(autoincrement())
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  total     Float
+  active    Boolean
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   orderItems OrderItem[]
 }
 
@@ -101,19 +100,19 @@ model Ingredient {
   updatedAt       DateTime         @updatedAt
   createdAt       DateTime         @default(now())
   name            String           @unique
-  ingredientItems IngreidentItem[]
+  ingredientItems IngredientItem[]
 }
 
-model IngreidentItem {
+model IngredientItem {
   id           Int        @id @default(autoincrement())
   order        Int
   updatedAt    DateTime   @updatedAt
   createdAt    DateTime   @default(now())
   menuItemId   Int
-  menuItem     MenuItem   @relation(fields: [menuItemId], references: [id])
+  menuItem     MenuItem   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   ingredientId Int
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
 
-  //* To prevent duplicate order in a single menu item
   @@unique([order, menuItemId])
+  @@map("IngreidentItem")
 }

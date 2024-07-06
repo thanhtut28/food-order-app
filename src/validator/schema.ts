@@ -5,6 +5,7 @@ export const usernameSchema = z
    .string()
    .min(5, { message: "Username must be 5 or more characters long" })
    .trim();
+export const adderssSchema = z.string().min(10, { message: "Address must be 10 characters long" });
 export const passwordSchema = z
    .string()
    .min(4, { message: "Password must be 4 or more characters long" })
