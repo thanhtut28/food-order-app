@@ -14,15 +14,7 @@ builder.prismaObject("Cart", {
       user: t.relation("user"),
       cartItems: t.relation("cartItems"),
       cartItemsCount: t.relationCount("cartItems"),
-      total: t.field({
-         type: "Float",
-         resolve: async root => {
-            const cartItems = await db.cartItem.findMany({ where: { cartId: root.id } });
-            const total = cartItems.reduce((acc, cur) => acc + cur.total, 0);
-
-            return +total.toFixed(2);
-         },
-      }),
+      total: t.exposeFloat("total"),
    }),
 });
 

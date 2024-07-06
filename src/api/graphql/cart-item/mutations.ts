@@ -7,7 +7,7 @@ import { AddCartItemInput, RemoveCartItemInput, UpdateCartItemInput } from "./sc
 builder.mutationFields(t => ({
    addToCart: t.prismaField({
       type: "CartItem",
-      skipTypeScopes: true,
+
       nullable: true,
       args: {
          input: t.arg({
@@ -19,17 +19,32 @@ builder.mutationFields(t => ({
          const existingItem = await db.cartItem.findFirst({ where: { menuItemId, cartId } });
 
          const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
+         const cartItems = await db.cartItem.findMany({ where: { cartId } });
 
-         const total = +(menuItem?.price! * quantity).toFixed(2);
+         const addedItemPrice = +(menuItem?.price! * quantity).toFixed(2);
+         const totalPrice = cartItems.reduce((acc, cur) => acc + cur.total, 0);
 
          try {
             if (existingItem) {
+               // const [cart, addedItem] = await db.$transaction(
+               //    [
+               //      db.cart.update({
+               //       where: {
+               //          id: cartId
+               //       },
+               //       data: {
+
+               //       }
+               //      })
+               //    ]
+
+               // )
                return await db.cartItem.update({
                   ...query,
                   data: {
                      quantity: { increment: quantity },
                      total: {
-                        increment: total,
+                        increment: itemTotal,
                      },
                   },
                   where: {
@@ -44,7 +59,7 @@ builder.mutationFields(t => ({
                ...query,
                data: {
                   quantity,
-                  total,
+                  total: itemTotal,
                   cartId,
                   menuItemId,
                },
@@ -58,7 +73,7 @@ builder.mutationFields(t => ({
 
    removeCartItem: t.field({
       type: "Boolean",
-      skipTypeScopes: true,
+
       args: {
          input: t.arg({
             type: RemoveCartItemInput,
@@ -87,7 +102,7 @@ builder.mutationFields(t => ({
 
    updateCartItem: t.prismaField({
       type: "CartItem",
-      skipTypeScopes: true,
+
       nullable: true,
       args: {
          input: t.arg({
