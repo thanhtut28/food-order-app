@@ -1,13 +1,16 @@
+import { CartItem } from "@prisma/client";
 import { db } from "../../../utils/db";
 import { delay } from "../../../utils/delay";
 import errorHandler from "../../../utils/error-handler";
 import { builder } from "../../builder";
 import { AddCartItemInput, RemoveCartItemInput, UpdateCartItemInput } from "./schema";
+import { toCents, toDollars } from "../../../utils/currency-convert";
+import { ApolloError } from "apollo-server-core";
 
 builder.mutationFields(t => ({
    addToCart: t.prismaField({
       type: "CartItem",
-
+      // skipTypeScopes: true,
       nullable: true,
       args: {
          input: t.arg({
@@ -16,54 +19,73 @@ builder.mutationFields(t => ({
          }),
       },
       resolve: async (query, _, { input: { cartId, menuItemId, quantity } }) => {
-         const existingItem = await db.cartItem.findFirst({ where: { menuItemId, cartId } });
+         if (!cartId) {
+            errorHandler.throwAuthError();
+            return null;
+         }
 
          const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
-         const cartItems = await db.cartItem.findMany({ where: { cartId } });
 
-         const addedItemPrice = +(menuItem?.price! * quantity).toFixed(2);
-         const totalPrice = cartItems.reduce((acc, cur) => acc + cur.total, 0);
+         const existingItem = await db.cartItem.findUnique({
+            where: { cartId_menuItemId: { cartId, menuItemId } },
+         });
+         const addedItemPrice = toDollars(toCents(menuItem?.price ?? 0) * quantity);
+
+         console.log("added-price", addedItemPrice);
 
          try {
             if (existingItem) {
-               // const [cart, addedItem] = await db.$transaction(
-               //    [
-               //      db.cart.update({
-               //       where: {
-               //          id: cartId
-               //       },
-               //       data: {
-
-               //       }
-               //      })
-               //    ]
-
-               // )
-               return await db.cartItem.update({
+               const [_cart, addedCartItem] = await db.$transaction([
+                  db.cart.update({
+                     where: {
+                        id: cartId,
+                     },
+                     data: {
+                        total: {
+                           increment: addedItemPrice,
+                        },
+                     },
+                  }),
+                  db.cartItem.update({
+                     ...query,
+                     data: {
+                        quantity: { increment: quantity },
+                        total: {
+                           increment: addedItemPrice,
+                        },
+                     },
+                     where: {
+                        cartId_menuItemId: {
+                           cartId,
+                           menuItemId,
+                        },
+                     },
+                  }),
+               ]);
+               return addedCartItem;
+            }
+            const [_cart, addedCartItem] = await db.$transaction([
+               db.cart.update({
+                  where: {
+                     id: cartId,
+                  },
+                  data: {
+                     total: {
+                        increment: addedItemPrice,
+                     },
+                  },
+               }),
+               db.cartItem.create({
                   ...query,
                   data: {
-                     quantity: { increment: quantity },
-                     total: {
-                        increment: itemTotal,
-                     },
+                     quantity,
+                     total: addedItemPrice,
+                     cartId,
+                     menuItemId,
                   },
-                  where: {
-                     cartId_menuItemId: {
-                        cartId,
-                        menuItemId,
-                     },
-                  },
-               });
-            }
-            return await db.cartItem.create({
-               ...query,
-               data: {
-                  quantity,
-                  total: itemTotal,
-                  cartId,
-                  menuItemId,
-               },
-            });
+               }),
+            ]);
+            return addedCartItem;
          } catch (e) {
             console.log(e);
             return null;
@@ -81,16 +103,40 @@ builder.mutationFields(t => ({
          }),
       },
       resolve: async (query, { input: { cartId, menuItemId } }) => {
+         const removedItem = await db.cartItem.findUnique({
+            where: { cartId_menuItemId: { cartId, menuItemId } },
+         });
+
+         const cartItemsCount = await db.cartItem.count();
+
+         const isLastItem = cartItemsCount === 1;
+
          try {
-            await db.cartItem.delete({
-               ...query,
-               where: {
-                  cartId_menuItemId: {
-                     cartId,
-                     menuItemId,
+            await db.$transaction([
+               db.cart.update({
+                  where: {
+                     id: cartId,
                   },
-               },
-            });
+                  data: {
+                     total: isLastItem
+                        ? {
+                             set: 0,
+                          }
+                        : {
+                             decrement: removedItem?.total ?? 0,
+                          },
+                  },
+               }),
+               db.cartItem.delete({
+                  ...query,
+                  where: {
+                     cartId_menuItemId: {
+                        cartId,
+                        menuItemId,
+                     },
+                  },
+               }),
+            ]);
 
             return true;
          } catch (e) {
@@ -112,24 +158,45 @@ builder.mutationFields(t => ({
       },
       resolve: async (query, _, { input: { cartId, menuItemId, quantity } }) => {
          const menuItem = await db.menuItem.findUnique({ where: { id: menuItemId } });
+         const updateItem = await db.cartItem.findUnique({
+            where: { cartId_menuItemId: { cartId, menuItemId } },
+         });
 
-         const total = +(menuItem?.price! * quantity).toFixed(2);
+         const cart = await db.cart.findUnique({ where: { id: cartId } });
+         const cartTotal = cart?.total ?? 0;
+
+         const updatedItemPrice = toDollars(toCents(menuItem?.price ?? 0) * quantity);
+
+         //! Instead of fetching all cart items, update the price and sum all prices,
+         //! Subtract existing price and add the updated price
+         const updatedCartTotal = cartTotal - (updateItem?.total ?? 0) + updatedItemPrice;
+
+         console.log(cartTotal, updateItem?.total, updatedItemPrice);
 
          try {
-            const cartItem = await db.cartItem.update({
-               ...query,
-               data: {
-                  total,
-                  quantity,
-               },
-               where: {
-                  cartId_menuItemId: {
-                     cartId,
-                     menuItemId,
+            const [_cart, cartItem] = await db.$transaction([
+               db.cart.update({
+                  where: {
+                     id: cartId,
                   },
-               },
-            });
-
+                  data: {
+                     total: updatedCartTotal,
+                  },
+               }),
+               db.cartItem.update({
+                  ...query,
+                  data: {
+                     total: updatedItemPrice,
+                     quantity,
+                  },
+                  where: {
+                     cartId_menuItemId: {
+                        cartId,
+                        menuItemId,
+                     },
+                  },
+               }),
+            ]);
             return cartItem;
          } catch (e) {
             console.log(e);

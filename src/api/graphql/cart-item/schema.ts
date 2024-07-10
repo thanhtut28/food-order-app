@@ -1,7 +1,7 @@
 import { db } from "../../../utils/db";
 import { builder } from "../../builder";
 
-builder.prismaObject("CartItem", {
+export const CartItem = builder.prismaObject("CartItem", {
    fields: t => ({
       quantity: t.exposeInt("quantity"),
       menuItemId: t.exposeInt("menuItemId"),
@@ -21,7 +21,7 @@ export const GetCartItemsInput = builder.inputType("GetCartItemsInput", {
 
 export const AddCartItemInput = builder.inputType("AddCartItemInput", {
    fields: t => ({
-      cartId: t.int({ required: true }),
+      cartId: t.int(),
       menuItemId: t.int({ required: true }),
       quantity: t.int({ required: true }),
    }),
