@@ -8,30 +8,16 @@ builder.mutationFields(t => ({
    createNewCart: t.field({
       type: "Boolean",
       resolve: async (_, {}, { req }) => {
-         //! to optimize code
-         // last recent to fix
-
          try {
-            // const userId = req.session.userId;
-            // if (!userId) {
-            // errorHandler.throwAuthError();
-            //    return false;
-            // }
-
-            const user = await db.user.findUnique({
-               where: {
-                  id: req.session.userId,
-               },
-            });
-
-            if (!user) {
+            const userId = req.session.userId;
+            if (!userId) {
                errorHandler.throwAuthError();
                return false;
             }
 
             await db.cart.create({
                data: {
-                  userId: user.id,
+                  userId,
                },
             });
             return true;

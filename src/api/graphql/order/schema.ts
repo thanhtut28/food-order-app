@@ -18,7 +18,7 @@ builder.prismaObject("Order", {
    }),
 });
 
-export const CheckoutCartInput = builder.inputType("CheckoutCartInput", {
+export const CartItemsInput = builder.inputType("CartItemsInput", {
    fields: t => ({
       menuItemId: t.int({ required: true }),
       quantity: t.int({ required: true }),

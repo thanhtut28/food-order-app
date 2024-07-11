@@ -10,3 +10,10 @@ export const CartItem = builder.prismaObject("OrderItem", {
       total: t.exposeFloat("total"),
    }),
 });
+
+export const GetOrderItemsInput = builder.inputType("GetOrderItemsInput", {
+   fields: t => ({
+      orderId: t.int({ required: true }),
+      cursor: t.int(),
+   }),
+});
